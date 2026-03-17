@@ -1,0 +1,47 @@
+version: 1
+deck:
+  code: base_mvp
+  title: Базовая колода MVP
+  description: Универсальные метафорические карты для ежедневной саморефлексии.
+  is_active: true
+
+cards:
+  - code: misty_lake
+    title: Туманное озеро
+    image_uri: assets/cards/misty_lake.jpg
+    themes: [anxiety, self_worth]
+    archetypes: [mirror, shelter]
+    emotional_tags: [tension, fear, curiosity]
+    intensity_level: 2
+
+  - code: stair_to_light
+    title: Лестница в свет
+    image_uri: assets/cards/stair_to_light.jpg
+    themes: [work, self_worth]
+    archetypes: [path, seed]
+    emotional_tags: [hope, trust, fatigue]
+    intensity_level: 3
+
+  - code: quiet_lighthouse
+    title: Тихий маяк
+    image_uri: assets/cards/quiet_lighthouse.jpg
+    themes: [anxiety, boundaries]
+    archetypes: [shelter, bridge]
+    emotional_tags: [calm, trust, loneliness]
+    intensity_level: 1
+
+  - code: garden_after_rain
+    title: Сад после дождя
+    image_uri: assets/cards/garden_after_rain.jpg
+    themes: [relationships, self_worth]
+    archetypes: [seed, mirror]
+    emotional_tags: [grief, hope, calm]
+    intensity_level: 3
+
+  - code: workshop_door
+    title: Дверь в мастерскую
+    image_uri: assets/cards/workshop_door.jpg
+    themes: [work, money]
+    archetypes: [path, bridge]
+    emotional_tags: [curiosity, tension, hope]
+    intensity_level: 2

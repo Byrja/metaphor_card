@@ -1,0 +1,85 @@
+version: 1
+name: metaphor_card_taxonomy
+
+themes:
+  - id: relationships
+    title: Отношения
+    description: Контакт, близость, границы, уязвимость.
+  - id: work
+    title: Работа и реализация
+    description: Нагрузка, смысл, рост, выгорание.
+  - id: anxiety
+    title: Тревога и неопределённость
+    description: Напряжение, контроль, страх будущего.
+  - id: self_worth
+    title: Самооценка
+    description: Ценность себя, внутренний критик, опора.
+  - id: money
+    title: Деньги
+    description: Безопасность, ресурс, ограничения и выбор.
+  - id: boundaries
+    title: Границы
+    description: Личные пределы, отказ, бережность к себе.
+
+archetypes:
+  - id: mirror
+    title: Зеркало
+    description: Отражение текущего состояния и правды момента.
+  - id: path
+    title: Путь
+    description: Выбор направления, переход, шаг вперёд.
+  - id: shelter
+    title: Укрытие
+    description: Восстановление, замедление, самоподдержка.
+  - id: bridge
+    title: Мост
+    description: Связь между полюсами, диалог, интеграция.
+  - id: knot
+    title: Узел
+    description: Конфликт, застревание, повторяющийся паттерн.
+  - id: seed
+    title: Семя
+    description: Потенциал, рост, маленькое устойчивое действие.
+
+emotional_tags:
+  - calm
+  - tension
+  - fear
+  - hope
+  - grief
+  - anger
+  - shame
+  - joy
+  - fatigue
+  - curiosity
+  - trust
+  - loneliness
+
+intensity_levels:
+  1:
+    label: very_soft
+    guidance: Подходит для мягкого входа, разогрева и бережного чек-ина.
+  2:
+    label: soft
+    guidance: Умеренная глубина без сильной конфронтации.
+  3:
+    label: medium
+    guidance: Нормальная глубина для регулярного self-reflection.
+  4:
+    label: deep
+    guidance: Углубляющие темы, требует ресурса и времени.
+  5:
+    label: very_deep
+    guidance: Сильный эмоциональный материал, не использовать в risk-сценариях.
+
+crisis_mode:
+  avoid_intensity_gte: 4
+  avoid_tags:
+    - grief
+    - shame
+    - fear
+  avoid_archetypes:
+    - knot
+  notes:
+    - В кризисном режиме используем только стабилизирующие карты.
+    - Сначала безопасность и заземление, затем любой рефлексивный диалог.

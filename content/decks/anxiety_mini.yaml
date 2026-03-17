@@ -1,0 +1,23 @@
+version: 1
+deck:
+  code: anxiety_mini
+  title: Мини-колода «Тревога»
+  description: Карты для безопасного исследования тревожного состояния.
+  is_active: true
+
+cards:
+  - code: storm_window
+    title: Шторм за окном
+    image_uri: assets/cards/storm_window.jpg
+    themes: [anxiety]
+    archetypes: [mirror, knot]
+    emotional_tags: [fear, tension]
+    intensity_level: 4
+
+  - code: warm_blanket
+    title: Тёплый плед
+    image_uri: assets/cards/warm_blanket.jpg
+    themes: [anxiety, boundaries]
+    archetypes: [shelter]
+    emotional_tags: [calm, trust]
+    intensity_level: 1

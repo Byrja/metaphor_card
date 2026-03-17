@@ -1,54 +1,88 @@
-# TECH_ARCH — техническая архитектура MVP
+# TECH_ARCH.md
 
-## 1. Выбранный стек
-- **Язык:** Python 3.12+
-- **Telegram framework:** aiogram 3.x
-- **Хранение данных (MVP):** SQLite (с переходом на Postgres без изменения схемы)
-- **Миграции:** SQL-файлы в `migrations/`
-- **Конфигурация:** `.env` + pydantic-settings
-- **Логирование:** встроенный `logging` (JSON-friendly формат позже)
+## 1. Цель
+Зафиксировать техническую архитектуру MVP Telegram-бота Metaphor Card для безопасных сессий саморефлексии.
 
-## 2. Компоненты приложения
-1. **Bot interface layer** (`src/metaphor_bot/bot.py`)
-   - обработка команд `/start`, `/day_card`, `/check_in`, `/situation`, `/save_insight`, `/history`, `/patterns`, `/metrics`, `/admin_metrics`
-   - отправка текстовых сообщений пользователю
-2. **Dialogue layer** (`src/metaphor_bot/flows.py`)
-   - сценарии: onboarding, карта дня, check-in, разбор ситуации
-   - генерация открытых вопросов
-3. **Domain/content layer** (`src/metaphor_bot/cards.py`)
-   - каталог карт (MVP: in-memory)
-   - выбор карты для пользователя
-4. **Persistence layer** (`src/metaphor_bot/db.py`, `src/metaphor_bot/repository.py`)
-   - users / sessions / session_messages / insights / safety_events
-   - CRUD-операции + история инсайтов + персистентное состояние активных flow
-5. **Safety guard layer** (`src/metaphor_bot/safety.py`)
-   - red-flag детекция по ключевым фразам
-   - переключение на безопасный ответ
+---
 
-## 3. Поток запроса (пример: /day_card)
-1. Пользователь вызывает команду.
-2. Flow стартует сессию в БД.
-3. Сервис карт выбирает карту.
-4. Бот отправляет описание карты + вопрос L1.
-5. Ответ пользователя проходит safety-проверку.
-6. При нормальном сценарии — L2/L4, затем сохранение инсайта.
-7. При red flags — emergency response и лог safety-события.
+## 2. Технологический стек (MVP)
 
-## 4. Хранение медиа карт
-- В MVP карты представлены текстовыми метафорами.
-- Следующий шаг: хранить изображения в `assets/cards/` или S3-совместимом хранилище.
-- В БД хранить `image_path`/`image_url`.
+## 2.1 Bot runtime
+- **Язык:** Python 3.12
+- **Фреймворк:** `aiogram` (v3)
+- **Причина выбора:** зрелая экосистема, удобный FSM/routers, хорошая поддержка webhook/long-polling.
 
-## 5. Observability
-- Логируем события:
-  - `session_started`
-  - `session_completed`
-  - `insight_saved`
-  - `safety_triggered`
-  - `flow_resumed_after_restart` (план)
-- Минимальные метрики считаются SQL-запросами из БД и доступны пользователю через `/metrics`, а агрегаты продукта — через `/admin_metrics [days]` (роль admin, включая breakdown по сценариям).
+## 2.2 Backend/API
+- **Web:** `FastAPI` (внутренний API и health endpoints)
+- **ASGI server:** `uvicorn`
+- **Причина выбора:** быстрое описание контрактов, OpenAPI, простая интеграция с async-ботом.
 
-## 6. Масштабирование после MVP
-- Переключение SQLite → Postgres.
-- Вынос safety/диалог-движка в отдельные сервисы.
-- Добавление очереди задач для аналитики и рассылок.
+## 2.3 Storage
+- **MVP/dev:** SQLite (локально, простая разработка)
+- **Prod-ready:** PostgreSQL 16+
+- **ORM/DB toolkit:** SQLAlchemy 2.x + Alembic
+
+## 2.4 Media storage (карты)
+- **MVP:** файловая директория `assets/cards/` (локально/в контейнере)
+- **Prod:** S3-совместимый object storage (Yandex Object Storage / AWS S3 / MinIO)
+
+## 2.5 Observability
+- Структурированные логи в JSON (`structlog` или stdlib logging + json formatter)
+- Метрики: Prometheus endpoint (`/metrics`) с ключевыми счетчиками
+- Ошибки: интеграция с Sentry (prod)
+
+---
+
+## 3. Логическая архитектура
+
+Компоненты:
+1. **Telegram Interface Layer**
+   - обработка `/start`, кнопок, пользовательских реплик;
+   - маршрутизация в сценарии.
+2. **Dialogue Orchestrator**
+   - управление состоянием сессии;
+   - выбор следующего шага (L1-L4) и шаблона ответа.
+3. **Card Selection Service**
+   - выбор карты/расклада по сценарию и safety-контексту.
+4. **Memory & Pattern Service**
+   - сохранение инсайтов и извлечение повторяющихся тем.
+5. **Safety Guard Service**
+   - детекция risk-маркеров;
+   - переключение в кризисный протокол.
+6. **Persistence Layer**
+   - SQL-таблицы сессий, сообщений, инсайтов, safety-событий.
+
+---
+
+## 4. Deployment profile (MVP)
+- Один контейнер приложения (bot + API) + БД.
+- Режим запуска:
+  - dev: long polling;
+  - stage/prod: webhook за reverse proxy.
+- Конфигурация через `.env`.
+
+Минимальные переменные окружения:
+- `BOT_TOKEN`
+- `APP_ENV`
+- `DATABASE_URL`
+- `CARDS_STORAGE_MODE` (`local` / `s3`)
+- `CARDS_STORAGE_PATH` / `S3_BUCKET`
+- `SENTRY_DSN` (опционально)
+
+---
+
+## 5. NFR (MVP)
+- P95 ответа бота < 2.5 сек без генеративных внешних вызовов.
+- Доступность 99%+ на этапе пилота.
+- Идемпотентная обработка Telegram update_id.
+- Безопасное логирование (без чувствительных личных данных в raw-виде).
+
+---
+
+## 6. Technical risks
+- **Риск:** ограничение SQLite при росте нагрузки.  
+  **Решение:** ранняя миграция на Postgres + Alembic совместимость.
+- **Риск:** высокие ложные срабатывания safety-детектора.  
+  **Решение:** гибрид rule-based + ручной QA словарей.
+- **Риск:** рассинхрон состояния сценария.  
+  **Решение:** хранить state machine в БД + versioning состояния.
