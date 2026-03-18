@@ -1,0 +1,11 @@
+[Unit]
+Description=Sync codex PR branches with origin/main for metaphor_card
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=claw
+Group=openclawbus
+WorkingDirectory=/srv/openclaw-bus/metaphor_card
+EnvironmentFile=-/srv/openclaw-bus/secrets/metaphor-card-sync.env
+ExecStart=/srv/openclaw-bus/metaphor_card/.ops/codex-pr-sync.sh /srv/openclaw-bus/metaphor_card
