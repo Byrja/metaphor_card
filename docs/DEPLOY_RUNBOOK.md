@@ -123,7 +123,35 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 Ожидаемый результат:
 - `/start` проходит;
 - один сценарий проходит без исключений;
+- smoke проверяет один UX v3 текст в `/checkin`;
 - smoke завершает процесс корректно.
+
+## 6.1 Apply UX v3
+Перед применением UX v3-карты проверь guard на целевой JSON:
+
+```bash
+cd /opt/metaphor_card
+make ux-v3-check
+```
+
+Для dry-run пайплайна используй тот же v3 map через apply-gate:
+
+```bash
+cd /opt/metaphor_card
+make ux-v3-dry
+```
+
+Если guard прошёл, запускай apply-этап:
+
+```bash
+cd /opt/metaphor_card
+make ux-v3-apply
+```
+
+По умолчанию все три команды читают `docs/UX_PATCH_MAP_PYTHON_v3.json`. Guard завершится с ошибкой, если:
+- `items` пустой;
+- `source` содержит placeholder-маркер;
+- любой `old_snippet` совпадает с `new_snippet`.
 
 ## 7. Если сервис не поднялся
 1. Проверить конфиг:
