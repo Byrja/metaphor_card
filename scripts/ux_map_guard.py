@@ -36,6 +36,18 @@ def validation_error(data: dict[str, Any]) -> UXMapError | None:
         return UXMapError("empty_map", "UX map items list is empty.")
     if "placeholder" in source.casefold():
         return UXMapError("placeholder_source", "UX map source still contains a placeholder marker.")
+
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            return UXMapError("invalid_shape", f"UX map item #{index} must be an object.")
+
+        old_snippet = item.get("old_snippet")
+        new_snippet = item.get("new_snippet")
+        if isinstance(old_snippet, str) and isinstance(new_snippet, str) and old_snippet == new_snippet:
+            return UXMapError(
+                "unchanged_snippet",
+                f"UX map item #{index} has identical old_snippet and new_snippet.",
+            )
     return None
 
 
