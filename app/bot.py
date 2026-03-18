@@ -11,6 +11,24 @@ from app.events import log_event, setup_event_logger
 from app.memory import PatternScore, extract_theme_scores
 from app.reminder import build_nudge
 from app.safety import CRISIS_REPLY, MEDIUM_RISK_REPLY, assess_text_risk
+from app.ux_copy import (
+    CHECKIN_CARD,
+    CHECKIN_TITLE,
+    DAY_CARD_TEXT,
+    HISTORY_EMPTY_TEXT,
+    HISTORY_STEP_LABEL,
+    HISTORY_TITLE,
+    INSIGHT_SAVED_TEXT,
+    INSIGHT_USAGE_TEXT,
+    PATTERNS_EMPTY_TEXT,
+    PATTERNS_HINT,
+    PATTERNS_TITLE,
+    SITUATION_QUESTION,
+    SITUATION_SAVE_HINT,
+    SITUATION_TITLE,
+    START_TEXT,
+    UNKNOWN_COMMAND_TEXT,
+)
 
 SITUATION_PROMPTS = [
     "Карта 1 — где ты сейчас.",
@@ -30,23 +48,23 @@ state = BotState()
 
 def format_history(rows) -> str:
     if not rows:
-        return "Пока нет сохранённых инсайтов."
+        return HISTORY_EMPTY_TEXT
 
-    parts = ["Твои последние инсайты:"]
+    parts = [HISTORY_TITLE]
     for idx, row in enumerate(rows, start=1):
-        step = f" | шаг: {row['small_step_text']}" if row["small_step_text"] else ""
+        step = f" | {HISTORY_STEP_LABEL}: {row['small_step_text']}" if row["small_step_text"] else ""
         parts.append(f"{idx}) [{row['scenario_type']}] {row['insight_text']}{step}")
     return "\n".join(parts)
 
 
 def format_patterns(rows) -> str:
     if not rows:
-        return "Пока мало данных для паттернов. Сохрани ещё 2-3 инсайта."
-    lines = ["Повторяющиеся темы в твоих последних инсайтах:"]
+        return PATTERNS_EMPTY_TEXT
+    lines = [PATTERNS_TITLE]
     for idx, row in enumerate(rows, start=1):
         pct = round(float(row["score"]) * 100)
         lines.append(f"{idx}) {row['pattern_key']} — {pct}%")
-    lines.append("Если хочешь, получи мягкую подсказку: /nudge")
+    lines.append(PATTERNS_HINT)
     return "\n".join(lines)
 
 
@@ -101,18 +119,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         log_event("user_started", user_id=user_id)
-        await message.answer(
-            "Привет. Я бот для бережной саморефлексии через метафорические карты.\n"
-            "Это не гадание и не психотерапия.\n\n"
-            "Команды:\n"
-            "/day — карта дня\n"
-            "/checkin — быстрый чек-ин\n"
-            "/situation — разбор ситуации (3 карты)\n"
-            "/insight <текст> — сохранить инсайт\n"
-            "/history — история\n"
-            "/patterns — повторяющиеся темы\n"
-            "/nudge — мягкая подсказка по главной теме"
-        )
+        await message.answer(START_TEXT)
 
     @dp.message(Command("day"))
     async def day_card(message: Message) -> None:
@@ -128,7 +135,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.pending_insight_by_user[user.id] = f"Карта дня: {card.title}"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="day_card")
-        await message.answer(f"Твоя карта дня: {card.title}\n{prompt}")
+        await message.answer(DAY_CARD_TEXT.format(title=card.title, prompt=prompt))
 
     @dp.message(Command("checkin"))
     async def checkin(message: Message) -> None:
@@ -141,7 +148,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
         prompts = content.checkin_prompts()
         safe_card = content.random_day_card(safety_mode="conservative")
-        text = "\n".join(["Быстрый чек-ин (бережный режим):", f"Карта опоры: {safe_card.title}", *prompts])
+        text = "\n".join([CHECKIN_TITLE, CHECKIN_CARD.format(title=safe_card.title), *prompts])
         state.pending_insight_by_user[user.id] = "Чек-ин: обозначено текущее состояние"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="check_in")
@@ -157,11 +164,11 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         log_event("session_started", user_id=user_id, session_id=session_id, scenario_type="situation_review")
 
         cards = content.random_situation_cards(safety_mode="normal")
-        lines = ["Разбор ситуации (3 карты):"]
+        lines = [SITUATION_TITLE]
         for prompt, card in zip(SITUATION_PROMPTS, cards):
             lines.append(f"- {prompt} {card.title}")
-        lines.append(f"Углубляющий вопрос: {content.random_prompt('l3')}")
-        lines.append("Сформулируй вывод и сохрани через /insight <текст>")
+        lines.append(SITUATION_QUESTION.format(prompt=content.random_prompt("l3")))
+        lines.append(SITUATION_SAVE_HINT)
         state.pending_insight_by_user[user.id] = (
             f"Разбор: {cards[0].title} / {cards[1].title} / {cards[2].title}"
         )
@@ -177,7 +184,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
         payload = (message.text or "").split(maxsplit=1)
         if len(payload) < 2:
-            await message.answer("Добавь текст после команды: /insight мой вывод")
+            await message.answer(INSIGHT_USAGE_TEXT)
             return
 
         safety_reply = await run_safety_guard(db, user.id, user_id, payload[1])
@@ -194,7 +201,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         db.save_insight(session_id, user_id, payload[1], state.pending_insight_by_user.get(user.id))
         rebuild_patterns(db, user_id)
         log_event("insight_saved", user_id=user_id, session_id=session_id)
-        await message.answer("Инсайт сохранён. /history, /patterns или /nudge")
+        await message.answer(INSIGHT_SAVED_TEXT)
 
     @dp.message(Command("history"))
     async def history(message: Message) -> None:
@@ -234,7 +241,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await message.answer(safety_reply)
             return
 
-        await message.answer("Я пока понимаю команды. Начни с /start")
+        await message.answer(UNKNOWN_COMMAND_TEXT)
 
 
 async def run() -> None:
