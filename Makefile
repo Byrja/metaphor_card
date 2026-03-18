@@ -1,4 +1,4 @@
-.PHONY: ux-map-check ux-map-apply ux-v3-check ux-v3-dry ux-v3-apply ux-v4-check ux-v4-dry ux-v4-apply
+.PHONY: ux-map-check ux-map-apply ux-v3-check ux-v3-dry ux-v3-apply ux-v4-check ux-v4-dry ux-v4-apply cards-check cards-prepare cards-prepare-approved
 
 PYTHON ?= python3
 UX_MAP_PATH ?= docs/UX_PATCH_MAP_PYTHON_v2.json
@@ -28,3 +28,12 @@ ux-v4-dry:
 
 ux-v4-apply:
 	$(PYTHON) scripts/ux_map_guard.py apply --map $(UX_V4_MAP_PATH)
+
+cards-check:
+	$(PYTHON) scripts/cards_validate.py
+
+cards-prepare:
+	$(PYTHON) scripts/cards_prepare.py
+
+cards-prepare-approved:
+	$(PYTHON) scripts/cards_prepare.py --only approved

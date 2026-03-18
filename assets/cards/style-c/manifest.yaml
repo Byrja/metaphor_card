@@ -1,0 +1,196 @@
+version: 1
+cards:
+  - id: style_c_001
+    slug: misty_lake
+    title_ru: "Туманное озеро"
+    tags:
+      - style-c
+      - base-mvp
+      - approved
+    source_file: drafts/file_58---a8296dce-a314-4e89-92a0-a2bc95e98c96.jpg
+    processed_file: processed/misty_lake.webp
+    status: approved
+  - id: style_c_002
+    slug: stair_to_light
+    title_ru: "Лестница в свет"
+    tags:
+      - style-c
+      - base-mvp
+      - approved
+    source_file: drafts/file_59---bd1b7387-d844-42e0-bc2c-121c6c546b52.jpg
+    processed_file: processed/stair_to_light.webp
+    status: approved
+  - id: style_c_003
+    slug: quiet_lighthouse
+    title_ru: "Тихий маяк"
+    tags:
+      - style-c
+      - base-mvp
+      - approved
+    source_file: drafts/file_60---d7c1e861-c333-47ce-bcd9-2c4d2d32c611.jpg
+    processed_file: processed/quiet_lighthouse.webp
+    status: approved
+  - id: style_c_004
+    slug: garden_after_rain
+    title_ru: "Сад после дождя"
+    tags:
+      - style-c
+      - base-mvp
+      - approved
+    source_file: drafts/file_61---ad6ee0b0-86e5-436c-928e-2356d330ff26.jpg
+    processed_file: processed/garden_after_rain.webp
+    status: approved
+  - id: style_c_005
+    slug: workshop_door
+    title_ru: "Дверь в мастерскую"
+    tags:
+      - style-c
+      - base-mvp
+      - approved
+    source_file: drafts/file_62---9ad6f8f1-c494-4f3d-81e6-59c88a70599f.jpg
+    processed_file: processed/workshop_door.webp
+    status: approved
+  - id: style_c_006
+    slug: style-c-draft-006
+    title_ru: "Style C draft 006"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_63---6fbbe2fb-dbd2-44ea-9cbc-d39dd5f25cd3.jpg
+    processed_file: processed/style-c-draft-006.webp
+    status: draft
+  - id: style_c_007
+    slug: style-c-draft-007
+    title_ru: "Style C draft 007"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_64---d3ee2422-a7f8-452b-836a-f76b5925a4da.jpg
+    processed_file: processed/style-c-draft-007.webp
+    status: draft
+  - id: style_c_008
+    slug: style-c-draft-008
+    title_ru: "Style C draft 008"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_65---8f59e8e4-429e-490a-a836-399ccb94beeb.jpg
+    processed_file: processed/style-c-draft-008.webp
+    status: draft
+  - id: style_c_009
+    slug: style-c-draft-009
+    title_ru: "Style C draft 009"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_66---5549871f-7d8e-4b88-9b1c-31dc68cf305f.jpg
+    processed_file: processed/style-c-draft-009.webp
+    status: draft
+  - id: style_c_010
+    slug: style-c-draft-010
+    title_ru: "Style C draft 010"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_67---2344ba4f-dfc0-4564-9ab5-93739aed809b.jpg
+    processed_file: processed/style-c-draft-010.webp
+    status: draft
+  - id: style_c_011
+    slug: style-c-draft-011
+    title_ru: "Style C draft 011"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_68---3d722264-4ba1-4657-8abe-6f8168a8d56b.jpg
+    processed_file: processed/style-c-draft-011.webp
+    status: draft
+  - id: style_c_012
+    slug: style-c-draft-012
+    title_ru: "Style C draft 012"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_69---b8e9bec6-cc83-4d3f-824b-0d69b456d879.jpg
+    processed_file: processed/style-c-draft-012.webp
+    status: draft
+  - id: style_c_013
+    slug: style-c-draft-013
+    title_ru: "Style C draft 013"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_70---7d95accd-302b-46ad-ab7d-8eaf429133b0.jpg
+    processed_file: processed/style-c-draft-013.webp
+    status: draft
+  - id: style_c_014
+    slug: style-c-draft-014
+    title_ru: "Style C draft 014"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_71---e6de525a-6814-4508-a2de-de5ebca1ca3f.jpg
+    processed_file: processed/style-c-draft-014.webp
+    status: draft
+  - id: style_c_015
+    slug: style-c-draft-015
+    title_ru: "Style C draft 015"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_72---75dca781-cead-4e55-830a-dcb0d83aa1b8.jpg
+    processed_file: processed/style-c-draft-015.webp
+    status: draft
+  - id: style_c_016
+    slug: style-c-draft-016
+    title_ru: "Style C draft 016"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_73---8a2d262b-7036-45b3-99f0-dba310643216.jpg
+    processed_file: processed/style-c-draft-016.webp
+    status: draft
+  - id: style_c_017
+    slug: style-c-draft-017
+    title_ru: "Style C draft 017"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_74---a89de436-58ce-41dd-bda5-f744de80538d.jpg
+    processed_file: processed/style-c-draft-017.webp
+    status: draft
+  - id: style_c_018
+    slug: style-c-draft-018
+    title_ru: "Style C draft 018"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_75---0baa7798-c3af-4218-85b6-97b791837779.jpg
+    processed_file: processed/style-c-draft-018.webp
+    status: draft
+  - id: style_c_019
+    slug: style-c-draft-019
+    title_ru: "Style C draft 019"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_76---eb389269-fe7a-4a07-8937-7754b5fa6144.jpg
+    processed_file: processed/style-c-draft-019.webp
+    status: draft
+  - id: style_c_020
+    slug: style-c-draft-020
+    title_ru: "Style C draft 020"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_77---17b3ccea-99b2-4b11-a1ea-95442f5c0b35.jpg
+    processed_file: processed/style-c-draft-020.webp
+    status: draft
+  - id: style_c_021
+    slug: style-c-draft-021
+    title_ru: "Style C draft 021"
+    tags:
+      - style-c
+      - draft
+    source_file: drafts/file_78---54330567-5287-4272-8c97-e45f6658ed2f.jpg
+    processed_file: processed/style-c-draft-021.webp
+    status: draft
