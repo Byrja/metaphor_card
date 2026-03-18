@@ -1,24 +1,87 @@
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Mapping
 
 from dotenv import load_dotenv
+
+DEFAULT_DATABASE_PATH = "data/metaphor_card.db"
+DEFAULT_CONTENT_ROOT = "content"
+DEFAULT_ENV = "dev"
+DEFAULT_LOG_LEVEL = "INFO"
+VALID_ENVS = {"dev", "prod"}
+VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
+PLACEHOLDER_BOT_TOKENS = {
+    "put_your_telegram_token_here",
+    "your_bot_token_here",
+    "changeme",
+}
+
+
+class SettingsError(RuntimeError):
+    """Raised when required environment configuration is invalid."""
 
 
 @dataclass(frozen=True)
 class Settings:
     bot_token: str
-    database_path: str = "data/metaphor_card.db"
-    log_level: str = "INFO"
+    database_path: str = DEFAULT_DATABASE_PATH
+    log_level: str = DEFAULT_LOG_LEVEL
+    app_env: str = DEFAULT_ENV
+    content_root: str = DEFAULT_CONTENT_ROOT
 
 
-def load_settings() -> Settings:
+def _normalize_bot_token(raw_value: str | None) -> str:
+    token = (raw_value or "").strip()
+    if not token or token.lower() in PLACEHOLDER_BOT_TOKENS:
+        raise SettingsError(
+            "BOT_TOKEN is required. Set a real Telegram bot token in the environment or .env file."
+        )
+    return token
+
+
+def _normalize_log_level(raw_value: str | None) -> str:
+    level = (raw_value or DEFAULT_LOG_LEVEL).strip().upper() or DEFAULT_LOG_LEVEL
+    if level not in VALID_LOG_LEVELS:
+        return DEFAULT_LOG_LEVEL
+    return level
+
+
+def _normalize_app_env(raw_value: str | None) -> str:
+    app_env = (raw_value or DEFAULT_ENV).strip().lower() or DEFAULT_ENV
+    if app_env not in VALID_ENVS:
+        valid = ", ".join(sorted(VALID_ENVS))
+        raise SettingsError(f"APP_ENV must be one of: {valid}.")
+    return app_env
+
+
+def _normalize_database_path(raw_value: str | None) -> str:
+    path = (raw_value or DEFAULT_DATABASE_PATH).strip() or DEFAULT_DATABASE_PATH
+    if path == ":memory:":
+        return path
+
+    normalized = Path(path).expanduser()
+    parent = normalized.parent
+    if str(parent) in {"", "."}:
+        return str(normalized)
+    return str(normalized)
+
+
+def _normalize_content_root(raw_value: str | None) -> str:
+    root = (raw_value or DEFAULT_CONTENT_ROOT).strip() or DEFAULT_CONTENT_ROOT
+    return str(Path(root).expanduser())
+
+
+def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     load_dotenv()
+    env = environ if environ is not None else os.environ
 
-    token = os.getenv("BOT_TOKEN", "")
-    if not token:
-        raise RuntimeError("BOT_TOKEN is required")
     return Settings(
-        bot_token=token,
-        database_path=os.getenv("DATABASE_PATH", "data/metaphor_card.db"),
-        log_level=os.getenv("LOG_LEVEL", "INFO"),
+        bot_token=_normalize_bot_token(env.get("BOT_TOKEN")),
+        database_path=_normalize_database_path(env.get("DATABASE_PATH")),
+        log_level=_normalize_log_level(env.get("LOG_LEVEL")),
+        app_env=_normalize_app_env(env.get("APP_ENV")),
+        content_root=_normalize_content_root(env.get("CONTENT_ROOT")),
     )

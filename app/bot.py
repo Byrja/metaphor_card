@@ -243,10 +243,16 @@ async def run() -> None:
 
     db = Database(settings.database_path)
     db.init_schema()
-    log_event("db_schema_initialized")
+    log_event("db_schema_initialized", database_path=settings.database_path, app_env=settings.app_env)
 
-    content = ContentService()
-    log_event("content_loaded", decks_count=len(content.decks), prompt_layers=len(content.layers))
+    content = ContentService(settings.content_root)
+    log_event(
+        "content_loaded",
+        decks_count=len(content.decks),
+        prompt_layers=len(content.layers),
+        content_root=settings.content_root,
+        using_fallback=content.using_fallback,
+    )
 
     bot = Bot(token=settings.bot_token)
     dp = Dispatcher()
