@@ -1,0 +1,38 @@
+{"ts": "2026-03-18T09:35:47.795182+00:00", "event_name": "db_schema_initialized"}
+{"ts": "2026-03-18T09:35:47.857870+00:00", "event_name": "content_loaded", "decks_count": 5, "prompt_layers": 4}
+Start polling
+Run polling for bot @Byr_shizabot id=7978752495 - 'Помощь шизам 👮'
+Received SIGTERM signal
+Polling stopped for bot @Byr_shizabot id=7978752495 - 'Помощь шизам 👮'
+Polling stopped
+{"ts": "2026-03-18T09:38:50.777072+00:00", "event_name": "db_schema_initialized"}
+{"ts": "2026-03-18T09:38:50.837377+00:00", "event_name": "content_loaded", "decks_count": 5, "prompt_layers": 4}
+Start polling
+Run polling for bot @Byr_shizabot id=7978752495 - 'Помощь шизам 👮'
+{"ts": "2026-03-18T09:38:51.002620+00:00", "event_name": "user_started", "user_id": 1}
+{"ts": "2026-03-18T09:38:51.018836+00:00", "event_name": "user_started", "user_id": 1}
+Update id=698881000 is handled. Duration 187 ms by bot id=7978752495
+Update id=698880999 is handled. Duration 223 ms by bot id=7978752495
+Update id=698880998 is handled. Duration 266 ms by bot id=7978752495
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7978752495)
+Connection established (tryings = 1, bot id = 7978752495)
+{"ts": "2026-03-18T09:44:51.191610+00:00", "event_name": "session_started", "user_id": 1, "session_id": 1, "scenario_type": "day_card"}
+{"ts": "2026-03-18T09:44:51.200961+00:00", "event_name": "session_completed", "user_id": 1, "session_id": 1, "scenario_type": "day_card"}
+Update id=698881001 is handled. Duration 66 ms by bot id=7978752495
+{"ts": "2026-03-18T09:44:58.703715+00:00", "event_name": "session_started", "user_id": 1, "session_id": 2, "scenario_type": "check_in"}
+{"ts": "2026-03-18T09:44:58.709712+00:00", "event_name": "session_completed", "user_id": 1, "session_id": 2, "scenario_type": "check_in"}
+Update id=698881002 is handled. Duration 48 ms by bot id=7978752495
+{"ts": "2026-03-18T09:45:10.157093+00:00", "event_name": "patterns_opened", "user_id": 1, "rows_count": 0}
+Update id=698881003 is handled. Duration 41 ms by bot id=7978752495
+{"ts": "2026-03-18T11:19:10.123659+00:00", "event_name": "nudge_requested", "user_id": 1, "top_pattern": null}
+Update id=698881004 is handled. Duration 246 ms by bot id=7978752495
+{"ts": "2026-03-18T11:19:13.567232+00:00", "event_name": "session_started", "user_id": 1, "session_id": 3, "scenario_type": "day_card"}
+{"ts": "2026-03-18T11:19:13.580245+00:00", "event_name": "session_completed", "user_id": 1, "session_id": 3, "scenario_type": "day_card"}
+Update id=698881005 is handled. Duration 94 ms by bot id=7978752495
+Update id=698881006 is handled. Duration 54 ms by bot id=7978752495
+{"ts": "2026-03-18T11:19:31.945565+00:00", "event_name": "user_started", "user_id": 1}
+Update id=698881007 is handled. Duration 41 ms by bot id=7978752495
+Received SIGTERM signal
+Polling stopped for bot @Byr_shizabot id=7978752495 - 'Помощь шизам 👮'
+Polling stopped
