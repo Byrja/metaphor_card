@@ -1,13 +1,1 @@
-{
-  "version": "3",
-  "source": "runner export 2026-03-18T12:00:00Z",
-  "items": [
-    {
-      "target_file": "app/ux_copy.py",
-      "target_symbol": "CHECKIN_TITLE",
-      "old_snippet": "Сделаем короткий чек-ин без спешки.",
-      "new_snippet": "Сделаем короткий чек-ин без спешки и лишнего давления.",
-      "source_key": "content/prompts/microcopy.yaml#checkin.title"
-    }
-  ]
-}
+{"version": "3", "source": "metaphor-card", "items": [{"target_file": "content/prompts/layers.yaml", "target_symbol": "situation_analysis.questions", "old_snippet": "    - \"Какая деталь первой привлекает внимание?\"", "new_snippet": "    - \"Что первым бросается в глаза в этой ситуации?\"", "source_key": "/situation"}, {"target_file": "content/prompts/layers.yaml", "target_symbol": "body_awareness.questions", "old_snippet": "    - \"Как ты себя чувствуешь?\"", "new_snippet": "    - \"Что ты ощущаешь в теле прямо сейчас?\"", "source_key": "/checkin"}, {"target_file": "content/prompts/summaries.yaml", "target_symbol": "daily_card_summary.insights", "old_snippet": "    - \"Сегодня я понял(а), что...\"", "new_snippet": "    - \"Сегодня я замечаю, что...\"", "source_key": "/day"}, {"target_file": "content/prompts/microcopy.yaml", "target_symbol": "errors.card_loading", "old_snippet": "\"Кажется, что-то с загрузкой карты. Давай попробуем еще раз?\"", "new_snippet": "\"Карта пока не загрузилась. Давай попробуем еще раз?\"", "source_key": "error_microcopy"}]}
