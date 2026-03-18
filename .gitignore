@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .env
 data/*.db
+.venv/
+bot-run.log
+bot-run.pid
