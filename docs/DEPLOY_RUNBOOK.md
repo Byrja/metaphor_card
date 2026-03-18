@@ -143,8 +143,10 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 
 Ожидаемый результат:
 - `/start` проходит;
-- один сценарий проходит без исключений;
-- smoke проверяет один UX v3 текст в `/checkin`;
+- сценарии `/checkin` и `/situation` проходят без исключений;
+- smoke проверяет один UX v4 текст в `/checkin`;
+- smoke проверяет один UX v4 текст в `/situation`;
+- smoke проверяет один safety/error microcopy-текст из UX v4;
 - smoke завершает процесс корректно.
 
 ## 8. Если сервис не поднялся

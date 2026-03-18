@@ -23,10 +23,14 @@ def load_map(map_path: Path) -> dict[str, Any]:
 
     if not isinstance(data, dict):
         raise UXMapError("invalid_shape", "UX map root must be a JSON object.")
+    required_keys = {"version", "source", "items"}
+    if not required_keys.issubset(data):
+        raise UXMapError("invalid_shape", "UX map root must contain version, source, and items.")
     return data
 
 
 def validation_error(data: dict[str, Any]) -> UXMapError | None:
+    version = str(data.get("version", ""))
     items = data.get("items")
     source = str(data.get("source", ""))
 
@@ -34,9 +38,12 @@ def validation_error(data: dict[str, Any]) -> UXMapError | None:
         return UXMapError("invalid_shape", "UX map field 'items' must be a list.")
     if len(items) == 0:
         return UXMapError("empty_map", "UX map items list is empty.")
+    if version == "4" and len(items) < 8:
+        return UXMapError("too_few_items", "UX v4 map must contain at least 8 items.")
     if "placeholder" in source.casefold():
         return UXMapError("placeholder_source", "UX map source still contains a placeholder marker.")
 
+    seen_pairs: set[tuple[str, str]] = set()
     for index, item in enumerate(items):
         if not isinstance(item, dict):
             return UXMapError("invalid_shape", f"UX map item #{index} must be an object.")
@@ -48,6 +55,16 @@ def validation_error(data: dict[str, Any]) -> UXMapError | None:
                 "unchanged_snippet",
                 f"UX map item #{index} has identical old_snippet and new_snippet.",
             )
+        if version == "4":
+            target_file = item.get("target_file")
+            if isinstance(target_file, str) and isinstance(old_snippet, str):
+                pair = (target_file, old_snippet)
+                if pair in seen_pairs:
+                    return UXMapError(
+                        "duplicate_old_snippet",
+                        f"UX v4 map item #{index} duplicates target_file/old_snippet pair: {target_file!r}.",
+                    )
+                seen_pairs.add(pair)
     return None
 
 
