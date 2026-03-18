@@ -113,16 +113,30 @@ async def run_safety_guard(db: Database, user_telegram_id: int, user_id: int, te
 
 
 def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> None:
-    @dp.message(Command("start"))
-    async def start(message: Message) -> None:
+    def main_menu() -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🃏 Карта дня", callback_data="act:day"),
+                    InlineKeyboardButton(text="🫶 Чек-ин", callback_data="act:checkin"),
+                ],
+                [InlineKeyboardButton(text="🔎 Разбор ситуации", callback_data="act:situation")],
+                [
+                    InlineKeyboardButton(text="🧠 Паттерны", callback_data="act:patterns"),
+                    InlineKeyboardButton(text="📚 История", callback_data="act:history"),
+                ],
+                [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
+            ]
+        )
+
+    async def send_start(message: Message) -> None:
         user = message.from_user
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         log_event("user_started", user_id=user_id)
-        await message.answer(START_TEXT)
+        await message.answer(START_TEXT, reply_markup=main_menu())
 
-    @dp.message(Command("day"))
-    async def day_card(message: Message) -> None:
+    async def send_day_card(message: Message) -> None:
         user = message.from_user
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
@@ -135,10 +149,9 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.pending_insight_by_user[user.id] = f"Карта дня: {card.title}"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="day_card")
-        await message.answer(DAY_CARD_TEXT.format(title=card.title, prompt=prompt))
+        await message.answer(DAY_CARD_TEXT.format(title=card.title, prompt=prompt), reply_markup=main_menu())
 
-    @dp.message(Command("checkin"))
-    async def checkin(message: Message) -> None:
+    async def send_checkin(message: Message) -> None:
         user = message.from_user
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
@@ -152,10 +165,9 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.pending_insight_by_user[user.id] = "Чек-ин: обозначено текущее состояние"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="check_in")
-        await message.answer(text)
+        await message.answer(text, reply_markup=main_menu())
 
-    @dp.message(Command("situation"))
-    async def situation(message: Message) -> None:
+    async def send_situation(message: Message) -> None:
         user = message.from_user
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
@@ -174,7 +186,48 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         )
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="situation_review")
-        await message.answer("\n".join(lines))
+        await message.answer("\n".join(lines), reply_markup=main_menu())
+
+    async def send_history(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        user_id = db.upsert_user(user.id, user.username, user.full_name)
+        rows = db.get_recent_insights(user_id, limit=5)
+        log_event("history_opened", user_id=user_id, rows_count=len(rows))
+        await message.answer(format_history(rows), reply_markup=main_menu())
+
+    async def send_patterns(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        user_id = db.upsert_user(user.id, user.username, user.full_name)
+        rows = db.get_user_patterns(user_id, limit=5)
+        log_event("patterns_opened", user_id=user_id, rows_count=len(rows))
+        await message.answer(format_patterns(rows), reply_markup=main_menu())
+
+    async def send_nudge(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        user_id = db.upsert_user(user.id, user.username, user.full_name)
+        rows = db.get_user_patterns(user_id, limit=5)
+        top = top_pattern_from_rows(rows)
+        log_event("nudge_requested", user_id=user_id, top_pattern=(top.key if top else None))
+        await message.answer(build_nudge(top), reply_markup=main_menu())
+
+    @dp.message(Command("start"))
+    async def start(message: Message) -> None:
+        await send_start(message)
+
+    @dp.message(Command("day"))
+    async def day_card(message: Message) -> None:
+        await send_day_card(message)
+
+    @dp.message(Command("checkin"))
+    async def checkin(message: Message) -> None:
+        await send_checkin(message)
+
+    @dp.message(Command("situation"))
+    async def situation(message: Message) -> None:
+        await send_situation(message)
 
     @dp.message(Command("insight"))
     async def insight(message: Message) -> None:
@@ -184,12 +237,12 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
         payload = (message.text or "").split(maxsplit=1)
         if len(payload) < 2:
-            await message.answer(INSIGHT_USAGE_TEXT)
+            await message.answer(INSIGHT_USAGE_TEXT, reply_markup=main_menu())
             return
 
         safety_reply = await run_safety_guard(db, user.id, user_id, payload[1])
         if safety_reply:
-            await message.answer(safety_reply)
+            await message.answer(safety_reply, reply_markup=main_menu())
             return
 
         session_id = state.last_session_by_user.get(user.id)
@@ -201,35 +254,40 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         db.save_insight(session_id, user_id, payload[1], state.pending_insight_by_user.get(user.id))
         rebuild_patterns(db, user_id)
         log_event("insight_saved", user_id=user_id, session_id=session_id)
-        await message.answer(INSIGHT_SAVED_TEXT)
+        await message.answer(INSIGHT_SAVED_TEXT, reply_markup=main_menu())
 
     @dp.message(Command("history"))
     async def history(message: Message) -> None:
-        user = message.from_user
-        assert user is not None
-        user_id = db.upsert_user(user.id, user.username, user.full_name)
-        rows = db.get_recent_insights(user_id, limit=5)
-        log_event("history_opened", user_id=user_id, rows_count=len(rows))
-        await message.answer(format_history(rows))
+        await send_history(message)
 
     @dp.message(Command("patterns"))
     async def patterns(message: Message) -> None:
-        user = message.from_user
-        assert user is not None
-        user_id = db.upsert_user(user.id, user.username, user.full_name)
-        rows = db.get_user_patterns(user_id, limit=5)
-        log_event("patterns_opened", user_id=user_id, rows_count=len(rows))
-        await message.answer(format_patterns(rows))
+        await send_patterns(message)
 
     @dp.message(Command("nudge"))
     async def nudge(message: Message) -> None:
-        user = message.from_user
-        assert user is not None
-        user_id = db.upsert_user(user.id, user.username, user.full_name)
-        rows = db.get_user_patterns(user_id, limit=5)
-        top = top_pattern_from_rows(rows)
-        log_event("nudge_requested", user_id=user_id, top_pattern=(top.key if top else None))
-        await message.answer(build_nudge(top))
+        await send_nudge(message)
+
+    @dp.callback_query(F.data.startswith("act:"))
+    async def action_menu(callback: CallbackQuery) -> None:
+        if callback.message is None:
+            await callback.answer()
+            return
+        action = (callback.data or "").split(":", 1)[1]
+        mapping = {
+            "day": send_day_card,
+            "checkin": send_checkin,
+            "situation": send_situation,
+            "history": send_history,
+            "patterns": send_patterns,
+            "nudge": send_nudge,
+        }
+        handler = mapping.get(action)
+        if handler is None:
+            await callback.answer("Неизвестное действие", show_alert=False)
+            return
+        await callback.answer()
+        await handler(callback.message)
 
     @dp.message(F.text)
     async def fallback(message: Message) -> None:
@@ -238,10 +296,10 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         safety_reply = await run_safety_guard(db, user.id, user_id, message.text or "")
         if safety_reply:
-            await message.answer(safety_reply)
+            await message.answer(safety_reply, reply_markup=main_menu())
             return
 
-        await message.answer(UNKNOWN_COMMAND_TEXT)
+        await message.answer(UNKNOWN_COMMAND_TEXT, reply_markup=main_menu())
 
 
 async def run() -> None:
