@@ -1,0 +1,3 @@
+notes:
+  - Проверяй, что UX patch map указывает на реальные app/* пути Python-рантайма.
+  - Не начинай интеграцию, если в intake-пакете нет docs/UX_PATCH_MAP_PYTHON.md.

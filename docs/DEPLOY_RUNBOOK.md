@@ -135,3 +135,13 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 3. Проверить права на `DATABASE_PATH` и lock-директорию.
 4. Проверить наличие контента в `CONTENT_ROOT`.
 5. Если контент недоступен, бот запустится на fallback-контенте — это допустимый degraded mode, но не финальное production-состояние.
+
+## 8. Yandex UX v3 intake checklist
+Перед интеграцией нового UX-пакета прогоняйте короткий intake-checklist:
+
+1. Убедиться, что входной pack root — `docs/ux-pack-v3-python`.
+2. Проверить наличие `docs/UX_PATCH_MAP_PYTHON.md` внутри пакета. Если файла нет, интеграцию не запускать (`python-real-path-map required`).
+3. Убедиться, что `docs/UX_PATCH_MAP_PYTHON.md` ссылается на реальные Python runtime-пути `app/*`, а не на `src/*`, `frontend/*` или абстрактные псевдонимы.
+4. Проверить, что целевые пути ограничены только `content/prompts/*` и `docs/*`. Любые другие target paths должны быть отклонены до применения пакета.
+5. Выполнить локально `make ux-check` и затем `make ux-apply-dry`; только после зелёного dry-run разрешать фактический `make ux-apply`.
+6. После применения пакета повторно запустить `pytest` и `make smoke`, чтобы подтвердить, что UX-обновление не сломало runtime-поток.
