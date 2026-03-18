@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+
+class UXMapError(Exception):
+    def __init__(self, reason: str, message: str) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.message = message
+
+
+def load_map(map_path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(map_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise UXMapError("missing_map", f"UX map file not found: {map_path}") from exc
+    except json.JSONDecodeError as exc:
+        raise UXMapError("invalid_json", f"UX map file is not valid JSON: {map_path} ({exc})") from exc
+
+    if not isinstance(data, dict):
+        raise UXMapError("invalid_shape", "UX map root must be a JSON object.")
+    return data
+
+
+def validation_error(data: dict[str, Any]) -> UXMapError | None:
+    items = data.get("items")
+    source = str(data.get("source", ""))
+
+    if not isinstance(items, list):
+        return UXMapError("invalid_shape", "UX map field 'items' must be a list.")
+    if len(items) == 0:
+        return UXMapError("empty_map", "UX map items list is empty.")
+    if "placeholder" in source.casefold():
+        return UXMapError("placeholder_source", "UX map source still contains a placeholder marker.")
+    return None
+
+
+def print_report(status: str, map_path: Path, *, reason: str | None = None, detail: str | None = None, items_count: int | None = None) -> None:
+    print(f"status: {status}")
+    print(f"map: {map_path}")
+    if reason:
+        print(f"reason: {reason}")
+    if items_count is not None:
+        print(f"items: {items_count}")
+    if detail:
+        print(f"detail: {detail}")
+
+
+def run_check(map_path: Path) -> int:
+    try:
+        data = load_map(map_path)
+        error = validation_error(data)
+        items_count = len(data.get("items", [])) if isinstance(data.get("items"), list) else None
+        if error:
+            print_report("failed", map_path, reason=error.reason, detail=error.message, items_count=items_count)
+            return 1
+    except UXMapError as error:
+        print_report("failed", map_path, reason=error.reason, detail=error.message)
+        return 1
+
+    print_report("ok", map_path, items_count=len(data["items"]))
+    return 0
+
+
+def run_apply(map_path: Path) -> int:
+    try:
+        data = load_map(map_path)
+        error = validation_error(data)
+        items_count = len(data.get("items", [])) if isinstance(data.get("items"), list) else None
+        if error:
+            print_report("refused", map_path, reason=error.reason, detail=f"Refusing to apply UX map: {error.message}", items_count=items_count)
+            return 1
+    except UXMapError as error:
+        print_report("refused", map_path, reason=error.reason, detail=f"Refusing to apply UX map: {error.message}")
+        return 1
+
+    print_report("applied", map_path, items_count=len(data["items"]), detail="UX map passed validation; apply step may proceed.")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Validate and gate UX patch maps.")
+    parser.add_argument("command", choices=("check", "apply"))
+    parser.add_argument("--map", dest="map_path", type=Path, required=True)
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    if args.command == "check":
+        return run_check(args.map_path)
+    return run_apply(args.map_path)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
