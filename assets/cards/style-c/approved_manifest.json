@@ -1,6 +1,6 @@
 {
   "style": "style-c",
-  "draft_count": 23,
+  "draft_count": 25,
   "draft_images": [
     {
       "name": "file_58---a8296dce-a314-4e89-92a0-a2bc95e98c96.jpg",
@@ -116,6 +116,16 @@
       "name": "file_80---3d27e9a3-5661-475e-9d78-9c36ba2fd60b.jpg",
       "relative_path": "assets/cards/style-c/drafts/file_80---3d27e9a3-5661-475e-9d78-9c36ba2fd60b.jpg",
       "size_bytes": 256306
+    },
+    {
+      "name": "file_81---ab88094e-f56e-41fd-9927-38e8532646df.jpg",
+      "relative_path": "assets/cards/style-c/drafts/file_81---ab88094e-f56e-41fd-9927-38e8532646df.jpg",
+      "size_bytes": 243219
+    },
+    {
+      "name": "file_82---eb44ca81-9c0a-4d6d-afde-3006ae3bed2b.jpg",
+      "relative_path": "assets/cards/style-c/drafts/file_82---eb44ca81-9c0a-4d6d-afde-3006ae3bed2b.jpg",
+      "size_bytes": 209778
     }
   ]
 }
