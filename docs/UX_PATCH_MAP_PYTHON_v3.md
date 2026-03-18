@@ -1,0 +1,33 @@
+# UX Patch Map v3
+
+## /situation
+
+- **target_file**: content/prompts/layers.yaml
+- **target_symbol**: situation_analysis.questions
+- **old_snippet**: "    - "Какая деталь первой привлекает внимание?""
+- **new_snippet**: "    - "Что первым бросается в глаза в этой ситуации?""
+- **source_key**: /situation
+
+## /checkin
+
+- **target_file**: content/prompts/layers.yaml
+- **target_symbol**: body_awareness.questions
+- **old_snippet**: "    - "Как ты себя чувствуешь?""
+- **new_snippet**: "    - "Что ты ощущаешь в теле прямо сейчас?""
+- **source_key**: /checkin
+
+## /day
+
+- **target_file**: content/prompts/summaries.yaml
+- **target_symbol**: daily_card_summary.insights
+- **old_snippet**: "    - "Сегодня я понял(а), что...""
+- **new_snippet**: "    - "Сегодня я замечаю, что...""
+- **source_key**: /day
+
+## error_microcopy
+
+- **target_file**: content/prompts/microcopy.yaml
+- **target_symbol**: errors.card_loading
+- **old_snippet**: ""Кажется, что-то с загрузкой карты. Давай попробуем еще раз?""
+- **new_snippet**: ""Карта пока не загрузилась. Давай попробуем еще раз?""
+- **source_key**: error_microcopy
