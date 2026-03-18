@@ -6,6 +6,7 @@ import importlib
 import logging
 import random
 
+from app.cards_manifest import approved_manifest_map
 
 logger = logging.getLogger("metaphor_card.content")
 
@@ -90,6 +91,7 @@ class ContentService:
         self.layers: dict[str, list[str]] = {}
         self.crisis_mode = CrisisMode(avoid_intensity_gte=4, avoid_tags=(), avoid_archetypes=())
         self.using_fallback = False
+        self.manifest_cards: dict[str, str] = {}
         self._load()
 
     def _read_yaml(self, path: Path, fallback_payload: dict, description: str) -> dict:
@@ -108,6 +110,7 @@ class ContentService:
         return fallback_payload
 
     def _load(self) -> None:
+        self.manifest_cards = self._load_manifest_cards()
         taxonomy_path = self.root / "card_taxonomy.yaml"
         taxonomy = self._read_yaml(taxonomy_path, FALLBACK_TAXONOMY, "Taxonomy")
         crisis = taxonomy.get("crisis_mode", {})
@@ -132,7 +135,7 @@ class ContentService:
                 Card(
                     code=item["code"],
                     title=item["title"],
-                    image_uri=item.get("image_uri", ""),
+                    image_uri=self._resolve_image_uri(str(item["code"]), item.get("image_uri", "")),
                     intensity_level=int(item.get("intensity_level", 3)),
                     themes=tuple(item.get("themes", [])),
                     archetypes=tuple(item.get("archetypes", [])),
@@ -162,7 +165,7 @@ class ContentService:
             Card(
                 code=item["code"],
                 title=item["title"],
-                image_uri=item.get("image_uri", ""),
+                image_uri=self._resolve_image_uri(str(item["code"]), item.get("image_uri", "")),
                 intensity_level=int(item.get("intensity_level", 3)),
                 themes=tuple(item.get("themes", [])),
                 archetypes=tuple(item.get("archetypes", [])),
@@ -170,6 +173,14 @@ class ContentService:
             )
             for item in payload.get("cards", [])
         ]
+
+    def _load_manifest_cards(self) -> dict[str, str]:
+        manifest_path = self.root.parent / "assets" / "cards" / "style-c" / "manifest.yaml"
+        approved_cards = approved_manifest_map(manifest_path)
+        return {slug: entry.processed_file for slug, entry in approved_cards.items()}
+
+    def _resolve_image_uri(self, code: str, existing: str) -> str:
+        return self.manifest_cards.get(code, existing)
 
     def _filter_cards(self, cards: list[Card], safety_mode: str) -> list[Card]:
         if safety_mode != "conservative":
