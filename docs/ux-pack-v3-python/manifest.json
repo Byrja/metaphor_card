@@ -1,0 +1,37 @@
+{
+  "pack": "yandex-ux-v3-python",
+  "version": 3,
+  "target": "python",
+  "allowed_destination_prefixes": [
+    "content/",
+    "docs/"
+  ],
+  "forbidden_destination_prefixes": [
+    "app/",
+    "src/",
+    "scripts/",
+    "tests/"
+  ],
+  "forbidden_extensions": [
+    ".py",
+    ".pyc",
+    ".sh"
+  ],
+  "files": [
+    {
+      "source": "approved/content/prompts/layers.yaml",
+      "destination": "content/prompts/layers.yaml",
+      "format": "yaml"
+    },
+    {
+      "source": "approved/content/prompts/microcopy.yaml",
+      "destination": "content/prompts/microcopy.yaml",
+      "format": "yaml"
+    },
+    {
+      "source": "approved/docs/ux-pack-v3-python/safety_replies.json",
+      "destination": "docs/ux-pack-v3-python/safety_replies.json",
+      "format": "json"
+    }
+  ]
+}

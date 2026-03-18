@@ -113,7 +113,28 @@ journalctl -u metaphor-card.service -f
 }
 ```
 
-## 6. Smoke после деплоя
+## 6. Как интегрировать UX-пак от Yandex безопасно
+1. Подготовить approved-артефакты в `docs/ux-pack-v3-python/approved/` и обновить `docs/ux-pack-v3-python/manifest.json`. Каждый файл в manifest обязан указывать только целевые пути под `content/` или `docs/` — это страховка от случайного изменения runtime-кода.
+2. Прогнать валидацию пакета:
+   ```bash
+   make ux-check
+   ```
+   Проверка падает, если не хватает обязательных файлов, найдены placeholders (`TODO`, `{{...}}`, `<...>`), символ `�` или сломан `yaml/json`.
+3. Посмотреть dry-run diff перед копированием:
+   ```bash
+   ./scripts/integrate_yandex_ux.sh
+   ```
+4. Применить approved UX-артефакты только после чистого diff/ревью:
+   ```bash
+   ./scripts/integrate_yandex_ux.sh --apply
+   ```
+5. Сразу после интеграции выполнить smoke-прогон:
+   ```bash
+   PYTHONPATH=src:. ./scripts/smoke.sh
+   ```
+6. Для PR приложить proof-блок: output `make ux-check`, output интеграционного dry-run/apply и список изменённых файлов (`git status --short`).
+
+## 7. Smoke после деплоя
 После каждого выката:
 ```bash
 cd /opt/metaphor_card
@@ -125,7 +146,7 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 - один сценарий проходит без исключений;
 - smoke завершает процесс корректно.
 
-## 7. Если сервис не поднялся
+## 8. Если сервис не поднялся
 1. Проверить конфиг:
    ```bash
    sudo systemctl status metaphor-card.service
