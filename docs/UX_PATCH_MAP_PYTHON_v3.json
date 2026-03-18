@@ -1,0 +1,13 @@
+{
+  "version": "3",
+  "source": "runner export 2026-03-18T12:00:00Z",
+  "items": [
+    {
+      "target_file": "app/ux_copy.py",
+      "target_symbol": "CHECKIN_TITLE",
+      "old_snippet": "Сделаем короткий чек-ин без спешки.",
+      "new_snippet": "Сделаем короткий чек-ин без спешки и лишнего давления.",
+      "source_key": "content/prompts/microcopy.yaml#checkin.title"
+    }
+  ]
+}
