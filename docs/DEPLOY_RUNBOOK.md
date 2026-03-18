@@ -122,8 +122,10 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 
 Ожидаемый результат:
 - `/start` проходит;
-- один сценарий проходит без исключений;
-- smoke проверяет один UX v3 текст в `/checkin`;
+- сценарии `/checkin` и `/situation` проходят без исключений;
+- smoke проверяет один UX v4 текст в `/checkin`;
+- smoke проверяет один UX v4 текст в `/situation`;
+- smoke проверяет один safety/error microcopy-текст из UX v4;
 - smoke завершает процесс корректно.
 
 ## 6.1 Apply UX v3
@@ -152,6 +154,36 @@ make ux-v3-apply
 - `items` пустой;
 - `source` содержит placeholder-маркер;
 - любой `old_snippet` совпадает с `new_snippet`.
+
+## 6.2 Apply UX v4 safely
+Перед применением UX v4-карты сначала проверь guard на целевом JSON:
+
+```bash
+cd /opt/metaphor_card
+make ux-v4-check
+```
+
+Для dry-run пайплайна используй apply-gate с тем же map:
+
+```bash
+cd /opt/metaphor_card
+make ux-v4-dry
+```
+
+Если guard прошёл, запускай apply-этап:
+
+```bash
+cd /opt/metaphor_card
+make ux-v4-apply
+```
+
+По умолчанию все три команды читают `docs/UX_PATCH_MAP_PYTHON_v4.json`. Для v4 guard завершится с ошибкой, если:
+- root JSON не object c полями `version`, `source`, `items`;
+- `items` не список;
+- `items` пустой или в нём меньше 8 элементов;
+- `source` содержит placeholder-маркер;
+- любой `old_snippet` совпадает с `new_snippet`;
+- в `items` повторяется пара `(target_file, old_snippet)`.
 
 ## 7. Если сервис не поднялся
 1. Проверить конфиг:
