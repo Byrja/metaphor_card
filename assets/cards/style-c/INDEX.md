@@ -1,6 +1,6 @@
 # Style-C Draft Cards (chat imports)
 
-Total: 21
+Total: 23
 
 01. file_58---a8296dce-a314-4e89-92a0-a2bc95e98c96.jpg
 02. file_59---bd1b7387-d844-42e0-bc2c-121c6c546b52.jpg
@@ -23,3 +23,5 @@ Total: 21
 19. file_76---eb389269-fe7a-4a07-8937-7754b5fa6144.jpg
 20. file_77---17b3ccea-99b2-4b11-a1ea-95442f5c0b35.jpg
 21. file_78---54330567-5287-4272-8c97-e45f6658ed2f.jpg
+22. file_79---8b807ffc-d483-43a4-97f9-4839591f1625.jpg
+23. file_80---3d27e9a3-5661-475e-9d78-9c36ba2fd60b.jpg
