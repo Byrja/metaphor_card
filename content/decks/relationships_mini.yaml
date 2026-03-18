@@ -1,0 +1,23 @@
+version: 1
+deck:
+  code: relationships_mini
+  title: Мини-колода «Отношения»
+  description: Карты для тем близости, диалога и границ.
+  is_active: true
+
+cards:
+  - code: two_chairs
+    title: Два стула у окна
+    image_uri: assets/cards/two_chairs.jpg
+    themes: [relationships, boundaries]
+    archetypes: [bridge]
+    emotional_tags: [trust, loneliness, hope]
+    intensity_level: 2
+
+  - code: unopened_letter
+    title: Нераскрытое письмо
+    image_uri: assets/cards/unopened_letter.jpg
+    themes: [relationships, anxiety]
+    archetypes: [knot, mirror]
+    emotional_tags: [fear, shame, curiosity]
+    intensity_level: 4

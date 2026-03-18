@@ -1,0 +1,23 @@
+version: 1
+deck:
+  code: boundaries_mini
+  title: Мини-колода «Границы»
+  description: Карты для темы «мне можно» и «мне важно».
+  is_active: true
+
+cards:
+  - code: closed_gate
+    title: Закрытые ворота
+    image_uri: assets/cards/closed_gate.jpg
+    themes: [boundaries, relationships]
+    archetypes: [path, knot]
+    emotional_tags: [anger, fear, trust]
+    intensity_level: 3
+
+  - code: circle_of_light
+    title: Круг света
+    image_uri: assets/cards/circle_of_light.jpg
+    themes: [boundaries, self_worth]
+    archetypes: [shelter, seed]
+    emotional_tags: [calm, trust, joy]
+    intensity_level: 2

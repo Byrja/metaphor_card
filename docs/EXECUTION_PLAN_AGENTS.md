@@ -2,6 +2,12 @@
 
 Цель: запустить Telegram-бота метафорических карт как production-ready MVP с безопасной рефлексивной механикой.
 
+## Status snapshot
+- ✅ **Phase 1 — Product Foundation (P0)**: завершена (docs готовы).
+- 🟡 **Phase 2 — Architecture & Data (P0)**: в работе.
+- 🟡 **Phase 4 — MVP Build (P0)**: в работе.
+- ⏳ **Phase 3/5/6**: не начаты или частично запланированы.
+
 ## 0) Правила исполнения
 - Каждая задача = отдельный issue/branch/PR с проверяемым артефактом.
 - Никаких «готово» без proof: commit hash + demo output/screenshot + checklist.
@@ -11,6 +17,7 @@
 
 ## Phase 1 — Product Foundation (P0)
 **Owner:** Клава (архитектура) + Заря (контент-голос)
+**Status:** ✅ done
 
 ### 1.1 Product spec v1
 **Deliverable:** `docs/PRODUCT_SPEC.md`
@@ -37,6 +44,7 @@
 
 ## Phase 2 — Architecture & Data (P0)
 **Owner:** Искра
+**Status:** 🟡 in progress
 
 ### 2.1 Tech stack
 **Deliverable:** `docs/TECH_ARCH.md`
@@ -70,6 +78,7 @@
 
 ## Phase 3 — Content System (P1)
 **Owner:** Заря (контент) + Клава (контроль качества)
+**Status:** 🟡 in progress
 
 ### 3.1 Card taxonomy
 **Deliverable:** `content/card_taxonomy.yaml`
@@ -94,6 +103,7 @@
 
 ## Phase 4 — MVP Build (P0)
 **Owner:** Искра
+**Status:** 🟡 in progress
 
 ### 4.1 Core bot flows
 **Deliverable:** working bot commands/buttons
@@ -110,6 +120,12 @@
 - поиск повторяющихся тем;
 - мягкие напоминания («ты уже возвращался к этому...»).
 
+
+Текущий прогресс:
+- ✅ сохранение выводов.
+- ✅ поиск повторяющихся тем.
+- ✅ мягкие подсказки/напоминания через `/nudge`.
+
 ### 4.3 Safety guardrails runtime
 **Deliverable:**
 - детектор кризисных маркеров;
@@ -122,6 +138,7 @@
 
 ## Phase 5 — QA, Metrics, Iteration (P1)
 **Owner:** Клава
+**Status:** 🟡 in progress
 
 ### 5.1 Quality QA checklist
 **Deliverable:** `docs/QA_CHECKLIST.md`
@@ -137,6 +154,12 @@
 - повторные заходы в «разбор ситуации»;
 - safety-escalation rate.
 
+Текущий прогресс:
+- ✅ описана модель метрик и событий (`docs/METRICS.md`).
+- ✅ базовый JSON event logging подключен в runtime.
+- ✅ crisis-aware фильтрация контента подключена для бережного режима check-in.
+- ⏳ pending: экспорт в внешнюю систему мониторинга/дашборд.
+
 ### 5.3 Pilot loop
 **Deliverable:** weekly reports in `reports/`
 - что не заходит;
@@ -147,6 +170,7 @@
 
 ## Phase 6 — Monetization Layer (после PMF)
 **Owner:** Клава + Заря
+**Status:** ⏳ pending
 
 - premium decks
 - deep scenarios
@@ -157,16 +181,16 @@
 ---
 
 ## Первые 10 задач для старта (сразу в работу)
-1. Создать `PRODUCT_SPEC.md` (P0)
-2. Создать `TONE_AND_SAFETY.md` (P0)
-3. Создать `SESSION_FLOW.md` (P0)
-4. Зафиксировать `TECH_ARCH.md` (P0)
-5. Описать `DATA_MODEL.md` + миграции (P0)
-6. Поднять skeleton-бота с `/start` и «карта дня» (P0)
-7. Добавить flow «быстрый чек-ин» (P0)
-8. Добавить flow «разбор ситуации 3 карты» (P0)
-9. Реализовать сохранение инсайта + просмотр истории (P0)
-10. Включить safety-guard runtime (P0)
+- [x] Создать `PRODUCT_SPEC.md` (P0)
+- [x] Создать `TONE_AND_SAFETY.md` (P0)
+- [x] Создать `SESSION_FLOW.md` (P0)
+- [x] Зафиксировать `TECH_ARCH.md` (P0)
+- [x] Описать `DATA_MODEL.md` + миграции (P0)
+- [x] Поднять skeleton-бота с `/start` и «карта дня» (P0)
+- [x] Добавить flow «быстрый чек-ин» (P0)
+- [x] Добавить flow «разбор ситуации 3 карты» (P0)
+- [x] Реализовать сохранение инсайта + просмотр истории (P0)
+- [x] Включить safety-guard runtime (P0)
 
 ---
 

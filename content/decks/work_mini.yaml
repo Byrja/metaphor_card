@@ -1,0 +1,23 @@
+version: 1
+deck:
+  code: work_mini
+  title: Мини-колода «Работа»
+  description: Карты для фокуса, нагрузки и профессионального смысла.
+  is_active: true
+
+cards:
+  - code: crowded_calendar
+    title: Переполненный календарь
+    image_uri: assets/cards/crowded_calendar.jpg
+    themes: [work, anxiety]
+    archetypes: [knot]
+    emotional_tags: [fatigue, tension, fear]
+    intensity_level: 4
+
+  - code: empty_desk
+    title: Пустой стол
+    image_uri: assets/cards/empty_desk.jpg
+    themes: [work, self_worth]
+    archetypes: [mirror, seed]
+    emotional_tags: [calm, curiosity, hope]
+    intensity_level: 2
