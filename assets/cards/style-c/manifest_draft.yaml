@@ -1,0 +1,253 @@
+version: 1
+style: style-c
+cards:
+  - id: 1
+    code: "draft_001"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_58---a8296dce-a314-4e89-92a0-a2bc95e98c96.jpg"
+    processed_file: "assets/cards/style-c/processed/file-58-a8296dce-a314-4e89-92a0-a2bc95e98c96.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-58-a8296dce-a314-4e89-92a0-a2bc95e98c96.webp"
+  - id: 2
+    code: "draft_002"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_59---bd1b7387-d844-42e0-bc2c-121c6c546b52.jpg"
+    processed_file: "assets/cards/style-c/processed/file-59-bd1b7387-d844-42e0-bc2c-121c6c546b52.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-59-bd1b7387-d844-42e0-bc2c-121c6c546b52.webp"
+  - id: 3
+    code: "draft_003"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_60---d7c1e861-c333-47ce-bcd9-2c4d2d32c611.jpg"
+    processed_file: "assets/cards/style-c/processed/file-60-d7c1e861-c333-47ce-bcd9-2c4d2d32c611.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-60-d7c1e861-c333-47ce-bcd9-2c4d2d32c611.webp"
+  - id: 4
+    code: "draft_004"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_61---ad6ee0b0-86e5-436c-928e-2356d330ff26.jpg"
+    processed_file: "assets/cards/style-c/processed/file-61-ad6ee0b0-86e5-436c-928e-2356d330ff26.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-61-ad6ee0b0-86e5-436c-928e-2356d330ff26.webp"
+  - id: 5
+    code: "draft_005"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_62---9ad6f8f1-c494-4f3d-81e6-59c88a70599f.jpg"
+    processed_file: "assets/cards/style-c/processed/file-62-9ad6f8f1-c494-4f3d-81e6-59c88a70599f.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-62-9ad6f8f1-c494-4f3d-81e6-59c88a70599f.webp"
+  - id: 6
+    code: "draft_006"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_63---6fbbe2fb-dbd2-44ea-9cbc-d39dd5f25cd3.jpg"
+    processed_file: "assets/cards/style-c/processed/file-63-6fbbe2fb-dbd2-44ea-9cbc-d39dd5f25cd3.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-63-6fbbe2fb-dbd2-44ea-9cbc-d39dd5f25cd3.webp"
+  - id: 7
+    code: "draft_007"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_64---d3ee2422-a7f8-452b-836a-f76b5925a4da.jpg"
+    processed_file: "assets/cards/style-c/processed/file-64-d3ee2422-a7f8-452b-836a-f76b5925a4da.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-64-d3ee2422-a7f8-452b-836a-f76b5925a4da.webp"
+  - id: 8
+    code: "draft_008"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_65---8f59e8e4-429e-490a-a836-399ccb94beeb.jpg"
+    processed_file: "assets/cards/style-c/processed/file-65-8f59e8e4-429e-490a-a836-399ccb94beeb.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-65-8f59e8e4-429e-490a-a836-399ccb94beeb.webp"
+  - id: 9
+    code: "draft_009"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_66---5549871f-7d8e-4b88-9b1c-31dc68cf305f.jpg"
+    processed_file: "assets/cards/style-c/processed/file-66-5549871f-7d8e-4b88-9b1c-31dc68cf305f.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-66-5549871f-7d8e-4b88-9b1c-31dc68cf305f.webp"
+  - id: 10
+    code: "draft_010"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_67---2344ba4f-dfc0-4564-9ab5-93739aed809b.jpg"
+    processed_file: "assets/cards/style-c/processed/file-67-2344ba4f-dfc0-4564-9ab5-93739aed809b.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-67-2344ba4f-dfc0-4564-9ab5-93739aed809b.webp"
+  - id: 11
+    code: "draft_011"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_68---3d722264-4ba1-4657-8abe-6f8168a8d56b.jpg"
+    processed_file: "assets/cards/style-c/processed/file-68-3d722264-4ba1-4657-8abe-6f8168a8d56b.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-68-3d722264-4ba1-4657-8abe-6f8168a8d56b.webp"
+  - id: 12
+    code: "draft_012"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_69---b8e9bec6-cc83-4d3f-824b-0d69b456d879.jpg"
+    processed_file: "assets/cards/style-c/processed/file-69-b8e9bec6-cc83-4d3f-824b-0d69b456d879.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-69-b8e9bec6-cc83-4d3f-824b-0d69b456d879.webp"
+  - id: 13
+    code: "draft_013"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_70---7d95accd-302b-46ad-ab7d-8eaf429133b0.jpg"
+    processed_file: "assets/cards/style-c/processed/file-70-7d95accd-302b-46ad-ab7d-8eaf429133b0.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-70-7d95accd-302b-46ad-ab7d-8eaf429133b0.webp"
+  - id: 14
+    code: "draft_014"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_71---e6de525a-6814-4508-a2de-de5ebca1ca3f.jpg"
+    processed_file: "assets/cards/style-c/processed/file-71-e6de525a-6814-4508-a2de-de5ebca1ca3f.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-71-e6de525a-6814-4508-a2de-de5ebca1ca3f.webp"
+  - id: 15
+    code: "draft_015"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_72---75dca781-cead-4e55-830a-dcb0d83aa1b8.jpg"
+    processed_file: "assets/cards/style-c/processed/file-72-75dca781-cead-4e55-830a-dcb0d83aa1b8.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-72-75dca781-cead-4e55-830a-dcb0d83aa1b8.webp"
+  - id: 16
+    code: "draft_016"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_73---8a2d262b-7036-45b3-99f0-dba310643216.jpg"
+    processed_file: "assets/cards/style-c/processed/file-73-8a2d262b-7036-45b3-99f0-dba310643216.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-73-8a2d262b-7036-45b3-99f0-dba310643216.webp"
+  - id: 17
+    code: "draft_017"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_74---a89de436-58ce-41dd-bda5-f744de80538d.jpg"
+    processed_file: "assets/cards/style-c/processed/file-74-a89de436-58ce-41dd-bda5-f744de80538d.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-74-a89de436-58ce-41dd-bda5-f744de80538d.webp"
+  - id: 18
+    code: "draft_018"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_75---0baa7798-c3af-4218-85b6-97b791837779.jpg"
+    processed_file: "assets/cards/style-c/processed/file-75-0baa7798-c3af-4218-85b6-97b791837779.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-75-0baa7798-c3af-4218-85b6-97b791837779.webp"
+  - id: 19
+    code: "draft_019"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_76---eb389269-fe7a-4a07-8937-7754b5fa6144.jpg"
+    processed_file: "assets/cards/style-c/processed/file-76-eb389269-fe7a-4a07-8937-7754b5fa6144.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-76-eb389269-fe7a-4a07-8937-7754b5fa6144.webp"
+  - id: 20
+    code: "draft_020"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_77---17b3ccea-99b2-4b11-a1ea-95442f5c0b35.jpg"
+    processed_file: "assets/cards/style-c/processed/file-77-17b3ccea-99b2-4b11-a1ea-95442f5c0b35.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-77-17b3ccea-99b2-4b11-a1ea-95442f5c0b35.webp"
+  - id: 21
+    code: "draft_021"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_78---54330567-5287-4272-8c97-e45f6658ed2f.jpg"
+    processed_file: "assets/cards/style-c/processed/file-78-54330567-5287-4272-8c97-e45f6658ed2f.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-78-54330567-5287-4272-8c97-e45f6658ed2f.webp"
+  - id: 22
+    code: "draft_022"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_79---8b807ffc-d483-43a4-97f9-4839591f1625.jpg"
+    processed_file: "assets/cards/style-c/processed/file-79-8b807ffc-d483-43a4-97f9-4839591f1625.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-79-8b807ffc-d483-43a4-97f9-4839591f1625.webp"
+  - id: 23
+    code: "draft_023"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_80---3d27e9a3-5661-475e-9d78-9c36ba2fd60b.jpg"
+    processed_file: "assets/cards/style-c/processed/file-80-3d27e9a3-5661-475e-9d78-9c36ba2fd60b.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-80-3d27e9a3-5661-475e-9d78-9c36ba2fd60b.webp"
+  - id: 24
+    code: "draft_024"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_81---ab88094e-f56e-41fd-9927-38e8532646df.jpg"
+    processed_file: "assets/cards/style-c/processed/file-81-ab88094e-f56e-41fd-9927-38e8532646df.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-81-ab88094e-f56e-41fd-9927-38e8532646df.webp"
+  - id: 25
+    code: "draft_025"
+    status: "draft"
+    title_ru: ""
+    title_en: ""
+    meaning_short: ""
+    tags: []
+    source_file: "assets/cards/style-c/drafts/file_82---eb44ca81-9c0a-4d6d-afde-3006ae3bed2b.jpg"
+    processed_file: "assets/cards/style-c/processed/file-82-eb44ca81-9c0a-4d6d-afde-3006ae3bed2b.webp"
+    thumb_file: "assets/cards/style-c/thumbs/file-82-eb44ca81-9c0a-4d6d-afde-3006ae3bed2b.webp"
