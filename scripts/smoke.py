@@ -51,6 +51,7 @@ def _get_handler(handlers, name: str):
 async def main() -> int:
     state.last_session_by_user.clear()
     state.pending_insight_by_user.clear()
+    state.awaiting_free_text_insight_by_user.clear()
 
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "smoke.sqlite3"
@@ -74,7 +75,7 @@ async def main() -> int:
             raise RuntimeError("/start smoke failed")
         markup = start_message.answer_kwargs[-1].get("reply_markup")
         callback_data = [button.callback_data for row in markup.inline_keyboard for button in row] if markup else []
-        expected_actions = ["act:day", "act:checkin", "act:situation", "act:patterns", "act:history", "act:nudge"]
+        expected_actions = ["act:day", "act:checkin", "act:situation", "act:patterns", "act:history", "act:saveinsight", "act:nudge"]
         if callback_data != expected_actions:
             raise RuntimeError(f"/start inline menu mismatch: {callback_data}")
         print("[smoke] /start ok")

@@ -18,6 +18,7 @@ from app.ux_copy import (
     HISTORY_EMPTY_TEXT,
     HISTORY_STEP_LABEL,
     HISTORY_TITLE,
+    INSIGHT_PROMPT_TEXT,
     INSIGHT_SAVED_TEXT,
     INSIGHT_USAGE_TEXT,
     PATTERNS_EMPTY_TEXT,
@@ -41,6 +42,7 @@ class BotState:
     def __init__(self) -> None:
         self.last_session_by_user: dict[int, int] = {}
         self.pending_insight_by_user: dict[int, str] = {}
+        self.awaiting_free_text_insight_by_user: set[int] = set()
 
 
 state = BotState()
@@ -125,6 +127,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                     InlineKeyboardButton(text="🧠 Паттерны", callback_data="act:patterns"),
                     InlineKeyboardButton(text="📚 История", callback_data="act:history"),
                 ],
+                [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
                 [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
             ]
         )
@@ -213,6 +216,35 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         log_event("nudge_requested", user_id=user_id, top_pattern=(top.key if top else None))
         await message.answer(build_nudge(top), reply_markup=main_menu())
 
+    async def prompt_save_insight(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        state.awaiting_free_text_insight_by_user.add(user.id)
+        await message.answer(INSIGHT_PROMPT_TEXT, reply_markup=main_menu())
+
+    async def save_text_as_insight(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        user_id = db.upsert_user(user.id, user.username, user.full_name)
+        body = (message.text or "").strip()
+
+        safety_reply = await run_safety_guard(db, user.id, user_id, body)
+        if safety_reply:
+            await message.answer(safety_reply, reply_markup=main_menu())
+            return
+
+        session_id = state.last_session_by_user.get(user.id)
+        if not session_id:
+            session_id = db.create_session(user_id, "day_card")
+            db.complete_session(session_id)
+            state.last_session_by_user[user.id] = session_id
+
+        db.save_insight(session_id, user_id, body, state.pending_insight_by_user.get(user.id))
+        rebuild_patterns(db, user_id)
+        state.awaiting_free_text_insight_by_user.discard(user.id)
+        log_event("insight_saved", user_id=user_id, session_id=session_id)
+        await message.answer(INSIGHT_SAVED_TEXT, reply_markup=main_menu())
+
     @dp.message(Command("start"))
     async def start(message: Message) -> None:
         await send_start(message)
@@ -280,6 +312,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             "situation": send_situation,
             "history": send_history,
             "patterns": send_patterns,
+            "saveinsight": prompt_save_insight,
             "nudge": send_nudge,
         }
         handler = mapping.get(action)
@@ -293,6 +326,10 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
     async def fallback(message: Message) -> None:
         user = message.from_user
         assert user is not None
+        if user.id in state.awaiting_free_text_insight_by_user:
+            await save_text_as_insight(message)
+            return
+
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         safety_reply = await run_safety_guard(db, user.id, user_id, message.text or "")
         if safety_reply:
