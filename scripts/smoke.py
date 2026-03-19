@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from aiogram import Dispatcher
+from _bootstrap import ensure_repo_root_on_path
+
+ensure_repo_root_on_path()
 
 from app.bot import register_handlers, state
 from app.content import ContentService
