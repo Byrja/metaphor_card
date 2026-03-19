@@ -45,6 +45,7 @@ class BotInlineFlowTests(unittest.TestCase):
     def setUp(self) -> None:
         state.last_session_by_user.clear()
         state.pending_insight_by_user.clear()
+        state.awaiting_insight_by_user.clear()
         self._tmpdir = tempfile.TemporaryDirectory()
         db_path = Path(self._tmpdir.name) / "test.sqlite3"
         self.db = Database(db_path.as_posix())
@@ -87,6 +88,7 @@ class BotInlineFlowTests(unittest.TestCase):
                     "act:patterns",
                     "act:history",
                     "act:nudge",
+                    "act:saveinsight",
                 ],
             )
 
@@ -102,6 +104,7 @@ class BotInlineFlowTests(unittest.TestCase):
                 "act:patterns": "Пока данных мало",
                 "act:history": "Пока здесь пусто",
                 "act:nudge": "данных для персональной подсказки мало",
+                "act:saveinsight": "напиши одним сообщением свой инсайт",
             }
 
             for action, expected in action_expectations.items():
