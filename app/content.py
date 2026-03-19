@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import importlib
+import json
 import logging
 import random
 
@@ -90,6 +91,7 @@ class ContentService:
         self.layers: dict[str, list[str]] = {}
         self.crisis_mode = CrisisMode(avoid_intensity_gte=4, avoid_tags=(), avoid_archetypes=())
         self.using_fallback = False
+        self.approved_card_codes: tuple[str, ...] = ()
         self._load()
 
     def _read_yaml(self, path: Path, fallback_payload: dict, description: str) -> dict:
@@ -106,6 +108,54 @@ class ContentService:
             logger.warning("%s at %s is invalid (%s); using built-in fallback", description, path, exc)
         self.using_fallback = True
         return fallback_payload
+
+
+    def _manifest_path(self) -> Path:
+        return self.root.parent / "assets" / "cards" / "style-c" / "approved_manifest.json"
+
+    def _load_approved_card_codes(self) -> tuple[str, ...]:
+        manifest_path = self._manifest_path()
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return ()
+        except json.JSONDecodeError as exc:
+            logger.warning("Approved manifest at %s is invalid (%s); ignoring approved filter", manifest_path, exc)
+            return ()
+
+        raw_codes = payload.get("approved_cards", [])
+        if not isinstance(raw_codes, list):
+            logger.warning("Approved manifest at %s has non-list approved_cards; ignoring approved filter", manifest_path)
+            return ()
+
+        approved_codes = tuple(str(code).strip() for code in raw_codes if str(code).strip())
+        if not approved_codes:
+            return ()
+
+        known_codes = {card.code for cards in self.decks.values() for card in cards}
+        missing_codes = sorted(set(approved_codes) - known_codes)
+        if missing_codes:
+            logger.warning(
+                "Approved manifest references unknown card codes %s; ignoring approved filter",
+                ", ".join(missing_codes),
+            )
+            return ()
+
+        return approved_codes
+
+    def _apply_approved_filter(self) -> None:
+        approved_codes = self._load_approved_card_codes()
+        self.approved_card_codes = approved_codes
+        if not approved_codes:
+            return
+
+        base_cards = self.decks.get("base_mvp", [])
+        filtered = [card for card in base_cards if card.code in approved_codes]
+        if not filtered:
+            logger.warning("Approved manifest produced an empty base_mvp deck; using current deck fallback")
+            return
+
+        self.decks["base_mvp"] = filtered
 
     def _load(self) -> None:
         taxonomy_path = self.root / "card_taxonomy.yaml"
@@ -147,6 +197,8 @@ class ContentService:
         if "base_mvp" not in self.decks:
             self.using_fallback = True
             self.decks["base_mvp"] = self._cards_from_payload(FALLBACK_DECK)
+
+        self._apply_approved_filter()
 
         layers_path = self.root / "prompts" / "layers.yaml"
         layer_data = self._read_yaml(layers_path, FALLBACK_LAYERS, "Prompt layers")

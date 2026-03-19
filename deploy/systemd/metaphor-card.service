@@ -1,0 +1,28 @@
+[Unit]
+Description=Metaphor Card Telegram bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=metaphor
+Group=metaphor
+WorkingDirectory=/opt/metaphor_card
+EnvironmentFile=/opt/metaphor_card/.env
+ExecStart=/usr/bin/flock -n /var/lock/metaphor_card/polling.lock /opt/metaphor_card/.venv/bin/python -m app.main
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=30
+TimeoutStopSec=20
+KillSignal=SIGINT
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=metaphor-card
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/metaphor_card /var/lock/metaphor_card /opt/metaphor_card
+
+[Install]
+WantedBy=multi-user.target

@@ -15,12 +15,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Validate card assets and optional approved manifest.')
     parser.add_argument('--assets-root', type=Path, default=default_assets_root())
     parser.add_argument('--manifest-path', type=Path, default=None)
+    parser.add_argument('--content-root', type=Path, default=None)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    errors = validate_assets(args.assets_root, args.manifest_path)
+    errors = validate_assets(args.assets_root, args.manifest_path, args.content_root)
     if errors:
         for error in errors:
             print(f'[cards-check] ERROR: {error}')
