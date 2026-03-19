@@ -302,8 +302,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         await message.answer(UNKNOWN_COMMAND_TEXT, reply_markup=main_menu())
 
 
-async def run() -> None:
-    settings = load_settings()
+async def run(settings=None) -> None:
+    settings = settings or load_settings()
     setup_event_logger(settings.log_level)
 
     db = Database(settings.database_path)

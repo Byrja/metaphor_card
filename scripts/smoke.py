@@ -25,7 +25,7 @@ class FakeMessage:
         self.text = text
         self.answers: list[str] = []
 
-    async def answer(self, text: str) -> None:
+    async def answer(self, text: str, reply_markup=None, **kwargs) -> None:
         self.answers.append(text)
 
 
@@ -57,7 +57,7 @@ async def main() -> int:
 
         start_message = FakeMessage(user, "/start")
         await start_handler(start_message)
-        if not start_message.answers or "саморефлексии" not in start_message.answers[-1]:
+        if not start_message.answers or "Бережная саморефлексия" not in start_message.answers[-1]:
             raise RuntimeError("/start smoke failed")
         print("[smoke] /start ok")
         print(start_message.answers[-1])
