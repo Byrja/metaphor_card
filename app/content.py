@@ -208,5 +208,4 @@ class ContentService:
         return [
             self.random_prompt("l1"),
             self.random_prompt("l2"),
-            self.random_prompt("l4"),
         ]
