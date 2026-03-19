@@ -23,8 +23,11 @@
    DATABASE_PATH=/var/lib/metaphor_card/metaphor_card.db
    CONTENT_ROOT=/opt/metaphor_card/content
    LOG_LEVEL=INFO
-   # optional: override if you want the lock outside DATABASE_PATH directory
-   # POLLING_LOCK_PATH=/var/lock/metaphor_card/polling.lock
+   AI_ENABLED=0
+   AI_PROVIDER=openrouter
+   OPENROUTER_API_KEY=
+   OPENROUTER_MODEL=openai/gpt-4o-mini
+   AI_TIMEOUT_SEC=12
    ```
 5. Подготовить директории данных и lock-файл:
    ```bash
@@ -33,7 +36,8 @@
    ```
 
 ## 2. systemd unit
-Файл: `/etc/systemd/system/metaphor-card.service`
+Шаблон в репозитории: `deploy/systemd/metaphor-card.service`.
+Файл на сервере: `/etc/systemd/system/metaphor-card.service`
 
 ```ini
 [Unit]
@@ -128,8 +132,14 @@ journalctl -u metaphor-card.service -f
 После каждого выката:
 ```bash
 cd /opt/metaphor_card
-PYTHONPATH=src:. ./scripts/smoke.sh
+./scripts/run_prod_checklist.sh
 ```
+
+Состав чеклиста:
+- `pytest -q`;
+- `scripts/smoke.sh`;
+- `make cards-check`;
+- `make ux-v4-check`.
 
 Ожидаемый результат:
 - `/start` проходит;
@@ -206,3 +216,23 @@ make ux-v4-apply
 3. Проверить права на `DATABASE_PATH` и lock-директорию.
 4. Проверить наличие контента в `CONTENT_ROOT`.
 5. Если контент недоступен, бот запустится на fallback-контенте — это допустимый degraded mode, но не финальное production-состояние.
+
+## 8. Пошаговый деплой на чистом окружении
+1. Подготовить пользователя, директории и lock-файл из раздела 1.
+2. Скопировать репозиторий в `/opt/metaphor_card` и установить зависимости в `.venv`.
+3. Создать `.env` и выставить `AI_ENABLED=0`, пока ключ OpenRouter не проверен.
+4. Скопировать `deploy/systemd/metaphor-card.service` в `/etc/systemd/system/`.
+5. Выполнить `sudo systemctl daemon-reload`.
+6. Выполнить `cd /opt/metaphor_card && ./scripts/run_prod_checklist.sh`.
+7. Если чеклист зелёный, выполнить `sudo systemctl enable --now metaphor-card.service`.
+8. Проверить `sudo systemctl status metaphor-card.service` и `journalctl -u metaphor-card.service -n 100 --no-pager`.
+9. После подтверждения OpenRouter-ключа переключить `AI_ENABLED=1` и выполнить `sudo systemctl restart metaphor-card.service`.
+
+## 9. Rollback
+Если после выката появились ошибки:
+1. `sudo systemctl stop metaphor-card.service`.
+2. Вернуть предыдущий git commit или архив релиза в `/opt/metaphor_card`.
+3. При необходимости вернуть предыдущий `.env` с `AI_ENABLED=0`.
+4. Повторно запустить `./scripts/run_prod_checklist.sh`.
+5. Выполнить `sudo systemctl start metaphor-card.service`.
+6. Проверить логи через `journalctl -u metaphor-card.service -n 100 --no-pager`.

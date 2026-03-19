@@ -8,6 +8,7 @@ from pathlib import Path
 from aiogram import Dispatcher
 
 from app.bot import register_handlers, state
+from app.config import load_settings
 from app.content import ContentService
 from app.db import Database
 
@@ -68,7 +69,8 @@ async def main() -> int:
         db.init_schema()
         content = ContentService("content")
         dp = Dispatcher()
-        register_handlers(dp, db, content)
+        settings = load_settings({"BOT_TOKEN": "123:smoke-token", "AI_ENABLED": "0"})
+        register_handlers(dp, db, content, settings)
 
         user = FakeUser(id=4242, username="smoke", full_name="Smoke Test")
 
