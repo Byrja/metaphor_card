@@ -30,6 +30,12 @@ class FakeMessage:
         self.answers.append(text)
         self.answer_kwargs.append(kwargs)
 
+    async def answer_photo(self, photo, caption: str | None = None, **kwargs) -> None:
+        self.answers.append(caption or "")
+        payload = dict(kwargs)
+        payload["photo"] = photo
+        self.answer_kwargs.append(payload)
+
 
 class FakeCallbackQuery:
     def __init__(self, data: str, message: FakeMessage | None) -> None:
@@ -116,6 +122,96 @@ class BotInlineFlowTests(unittest.TestCase):
                 self.assertTrue(message.answers, action)
                 self.assertIn(expected.lower(), message.answers[-1].lower(), action)
                 self.assertEqual(callback.answer_calls[-1]["text"], None, action)
+
+        asyncio.run(scenario())
+
+    def test_day_mini_session_runs_all_four_steps_and_saves_summary(self):
+        async def scenario() -> None:
+            day_handler = self._get_message_handler("day_card")
+            fallback_handler = self._get_message_handler("fallback")
+
+            start = FakeMessage(self.user, "/day")
+            await day_handler(start)
+            self.assertIn("Шаг 1/4", start.answers[-1])
+
+            answers = [
+                "Сначала заметил спокойствие.",
+                "Это похоже на мой рабочий день сегодня.",
+                "Самое острое — страх ошибиться.",
+                "Напишу черновик письма до обеда.",
+            ]
+            last_message = start
+            for text in answers:
+                last_message = FakeMessage(self.user, text)
+                await fallback_handler(last_message)
+
+            self.assertIn("Итог мини-сессии", last_message.answers[-1])
+            self.assertIn("Маленький шаг на сегодня: Напишу черновик письма до обеда.", last_message.answers[-1])
+            markup = last_message.answer_kwargs[-1]["reply_markup"]
+            callback_data = [button.callback_data for row in markup.inline_keyboard for button in row]
+            self.assertEqual(
+                callback_data,
+                ["act:save_session_insight", "act:new_card", "act:menu"],
+            )
+
+            user_id = self.db.upsert_user(self.user.id, self.user.username, self.user.full_name)
+            rows = self.db.get_recent_insights(user_id, limit=5)
+            self.assertEqual(len(rows), 1)
+            self.assertIn("Итог мини-сессии", rows[0]["insight_text"])
+            self.assertEqual(rows[0]["small_step_text"], "Напишу черновик письма до обеда.")
+
+        asyncio.run(scenario())
+
+    def test_mini_session_safety_interrupts_and_stops_flow(self):
+        async def scenario() -> None:
+            situation_handler = self._get_message_handler("situation")
+            fallback_handler = self._get_message_handler("fallback")
+
+            start = FakeMessage(self.user, "/situation")
+            await situation_handler(start)
+            self.assertIn("Шаг 1/4", start.answers[-1])
+
+            risky = FakeMessage(self.user, "У меня паника и очень страшно")
+            await fallback_handler(risky)
+
+            self.assertIn("заземлиться", risky.answers[-1].lower())
+            self.assertNotIn(self.user.id, state.active_session_by_user)
+
+            with self.db.connection() as conn:
+                status = conn.execute("SELECT status FROM sessions ORDER BY id DESC LIMIT 1").fetchone()["status"]
+                safety_count = conn.execute("SELECT COUNT(*) AS c FROM safety_events").fetchone()["c"]
+            self.assertEqual(status, "safety_escalated")
+            self.assertEqual(safety_count, 1)
+
+        asyncio.run(scenario())
+
+    def test_final_screen_inline_buttons_work(self):
+        async def scenario() -> None:
+            day_handler = self._get_message_handler("day_card")
+            fallback_handler = self._get_message_handler("fallback")
+            callback_handler = self._get_callback_handler("action_menu")
+
+            await day_handler(FakeMessage(self.user, "/day"))
+            for text in [
+                "Заметил тепло.",
+                "Это похоже на разговор с близким.",
+                "Самое важное — попросить поддержку.",
+                "Напишу одному человеку вечером.",
+            ]:
+                await fallback_handler(FakeMessage(self.user, text))
+
+            save_callback = FakeCallbackQuery("act:save_session_insight", FakeMessage(self.user, "done"))
+            await callback_handler(save_callback)
+            self.assertEqual(save_callback.answer_calls[-1]["text"], "Итог уже сохранён")
+            self.assertIn("Сохранил.", save_callback.message.answers[-1])
+
+            new_card_callback = FakeCallbackQuery("act:new_card", FakeMessage(self.user, "done"))
+            await callback_handler(new_card_callback)
+            self.assertIn("Шаг 1/4", new_card_callback.message.answers[-1])
+
+            menu_callback = FakeCallbackQuery("act:menu", FakeMessage(self.user, "done"))
+            await callback_handler(menu_callback)
+            self.assertEqual(menu_callback.message.answers[-1], START_TEXT)
 
         asyncio.run(scenario())
 
