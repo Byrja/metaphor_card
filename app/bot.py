@@ -3,7 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from app.ai_client import suggest_small_step, summarize_reflection
 from app.config import Settings, load_settings
@@ -45,6 +45,7 @@ class BotState:
     def __init__(self) -> None:
         self.last_session_by_user: dict[int, int] = {}
         self.pending_insight_by_user: dict[int, str] = {}
+        self.awaiting_insight_by_user: set[int] = set()
 
 
 state = BotState()
@@ -153,6 +154,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
                     InlineKeyboardButton(text="📚 История", callback_data="act:history"),
                 ],
                 [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
+                [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
             ]
         )
 
@@ -262,6 +264,12 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
         log_event("nudge_requested", user_id=user_id, top_pattern=(top.key if top else None))
         await answer_user(message, build_nudge(top))
 
+    async def send_save_prompt(message: Message) -> None:
+        user = message.from_user
+        assert user is not None
+        state.awaiting_insight_by_user.add(user.id)
+        await message.answer("✍️ Напиши одним сообщением свой инсайт — я сохраню его в историю.", reply_markup=main_menu())
+
     @dp.message(Command("start"))
     async def start(message: Message) -> None:
         await send_start(message)
@@ -331,6 +339,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
             "history": send_history,
             "patterns": send_patterns,
             "nudge": send_nudge,
+            "saveinsight": send_save_prompt,
         }
         handler = mapping.get(action)
         if handler is None:
@@ -352,6 +361,12 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
     async def fallback(message: Message) -> None:
         user = message.from_user
         assert user is not None
+
+        if user.id in state.awaiting_insight_by_user and (message.text or "").strip():
+            message.text = f"/insight {(message.text or '').strip()}"
+            await insight(message)
+            return
+
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         safety_reply = await run_safety_guard(db, user.id, user_id, message.text or "")
         if safety_reply:
@@ -361,8 +376,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
         await answer_user(message, UNKNOWN_COMMAND_TEXT)
 
 
-async def run() -> None:
-    settings = load_settings()
+async def run(settings=None) -> None:
+    settings = settings or load_settings()
     setup_event_logger(settings.log_level)
 
     db = Database(settings.database_path)

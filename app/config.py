@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
@@ -114,10 +115,11 @@ def _normalize_timeout(raw_value: str | None) -> float:
 def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     load_dotenv()
     env = environ if environ is not None else os.environ
+    database_path = _normalize_database_path(env.get("DATABASE_PATH"))
 
     return Settings(
         bot_token=_normalize_bot_token(env.get("BOT_TOKEN")),
-        database_path=_normalize_database_path(env.get("DATABASE_PATH")),
+        database_path=database_path,
         log_level=_normalize_log_level(env.get("LOG_LEVEL")),
         app_env=_normalize_app_env(env.get("APP_ENV")),
         content_root=_normalize_content_root(env.get("CONTENT_ROOT")),

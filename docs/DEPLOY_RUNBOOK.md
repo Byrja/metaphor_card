@@ -90,6 +90,13 @@ sudo systemctl stop metaphor-card.service
 sudo systemctl restart metaphor-card.service
 ```
 
+Безопасный ручной рестарт вне `systemd` делай только после завершения предыдущего процесса и с тем же lock-path:
+```bash
+cd /opt/metaphor_card
+POLLING_LOCK_PATH=/var/lock/metaphor_card/polling.lock .venv/bin/python -m app.main
+```
+Если lock уже занят, `app.main` завершится с кодом `3` и сообщением `Polling lock error`, не создавая второй long-polling процесс.
+
 ## 4. Проверка single-instance
 Пока сервис запущен, повторный `ExecStart` с тем же lock-файлом завершится сразу и не создаст второй polling-процесс. Это убирает типичный источник `409 Conflict` для Telegram long polling.
 
@@ -97,6 +104,8 @@ sudo systemctl restart metaphor-card.service
 ```bash
 sudo -u metaphor /usr/bin/flock -n /var/lock/metaphor_card/polling.lock /bin/true && echo unlocked || echo locked
 ```
+
+Дополнительно можно проверить runtime-guard самого приложения: пока бот запущен, повторный `python -m app.main` с тем же `POLLING_LOCK_PATH` завершится без запуска polling. Это полезно при ручных smoke/restart-сценариях и защищает даже вне `systemd`.
 
 ## 5. Логи и ротация
 Основной режим — `journald`.
