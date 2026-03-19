@@ -318,19 +318,32 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
     async def send_checkin(message: Message) -> None:
         user = message.from_user
         assert user is not None
-        clear_active_session(user.id, mark_aborted=True)
         user_id = db.upsert_user(user.id, user.username, user.full_name)
+        clear_active_session(user.id, mark_aborted=True)
+        state.awaiting_insight_by_user.discard(user.id)
+
         session_id = db.create_session(user_id, "check_in")
         state.last_session_by_user[user.id] = session_id
         log_event("session_started", user_id=user_id, session_id=session_id, scenario_type="check_in")
 
-        prompts = content.checkin_prompts()
-        safe_card = content.random_day_card(safety_mode="conservative")
-        text = "\n".join([CHECKIN_TITLE, CHECKIN_CARD.format(title=safe_card.title), *prompts])
-        state.pending_insight_by_user[user.id] = "Чек-ин: обозначено текущее состояние"
-        db.complete_session(session_id)
-        log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="check_in")
-        await send_card_with_optional_image(message, safe_card, text, main_menu())
+        card = content.random_day_card(safety_mode="conservative")
+        caption = "\n".join([
+            CHECKIN_TITLE,
+            CHECKIN_CARD.format(title=card.title),
+            session_step_text(0, content),
+        ])
+
+        session = MiniSession(
+            user_id=user_id,
+            session_id=session_id,
+            scenario_type="check_in",
+            card_titles=[card.title],
+            card_caption=caption,
+        )
+        state.pending_insight_by_user[user.id] = f"Чек-ин: {card.title}"
+        state.active_session_by_user[user.id] = session
+
+        await send_card_with_optional_image(message, card, caption, active_session_menu())
 
     async def send_day_card(message: Message) -> None:
         await start_mini_session(message, "day_card")
