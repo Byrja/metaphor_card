@@ -1,8 +1,9 @@
 import json
+from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from app.config import load_settings
 from app.content import ContentService
@@ -129,8 +130,21 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                 ],
                 [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
                 [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
+                [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
             ]
         )
+
+    async def send_card_with_optional_image(message: Message, card, caption: str) -> None:
+        img = (card.image_uri or "").strip()
+        if img and not img.startswith("builtin://"):
+            path = Path(img)
+            if not path.is_absolute():
+                path = Path.cwd() / img
+            if path.exists():
+                await message.answer_photo(photo=FSInputFile(path), caption=caption, reply_markup=main_menu())
+                return
+        await message.answer(caption, reply_markup=main_menu())
+
 
     async def send_start(message: Message) -> None:
         user = message.from_user
@@ -152,7 +166,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.pending_insight_by_user[user.id] = f"Карта дня: {card.title}"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="day_card")
-        await message.answer(DAY_CARD_TEXT.format(title=card.title, prompt=prompt), reply_markup=main_menu())
+        await send_card_with_optional_image(message, card, DAY_CARD_TEXT.format(title=card.title, prompt=prompt))
 
     async def send_checkin(message: Message) -> None:
         user = message.from_user
@@ -168,7 +182,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.pending_insight_by_user[user.id] = "Чек-ин: обозначено текущее состояние"
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="check_in")
-        await message.answer(text, reply_markup=main_menu())
+        await send_card_with_optional_image(message, safe_card, text)
 
     async def send_situation(message: Message) -> None:
         user = message.from_user
@@ -189,7 +203,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         )
         db.complete_session(session_id)
         log_event("session_completed", user_id=user_id, session_id=session_id, scenario_type="situation_review")
-        await message.answer("\n".join(lines), reply_markup=main_menu())
+        await send_card_with_optional_image(message, cards[0], "\n".join(lines))
 
     async def send_history(message: Message) -> None:
         user = message.from_user
@@ -269,7 +283,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
         payload = (message.text or "").split(maxsplit=1)
         if len(payload) < 2:
-            await message.answer(INSIGHT_USAGE_TEXT, reply_markup=main_menu())
+            state.awaiting_insight_by_user.add(user.id)
+            await message.answer("✍️ Напиши одним сообщением свой инсайт — я сохраню его в историю.", reply_markup=main_menu())
             return
 
         safety_reply = await run_safety_guard(db, user.id, user_id, payload[1])
@@ -286,6 +301,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         db.save_insight(session_id, user_id, payload[1], state.pending_insight_by_user.get(user.id))
         rebuild_patterns(db, user_id)
         log_event("insight_saved", user_id=user_id, session_id=session_id)
+        state.awaiting_insight_by_user.discard(user.id)
         await message.answer(INSIGHT_SAVED_TEXT, reply_markup=main_menu())
 
     @dp.message(Command("history"))
@@ -314,6 +330,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             "patterns": send_patterns,
             "saveinsight": prompt_save_insight,
             "nudge": send_nudge,
+            "saveinsight": send_save_prompt,
         }
         handler = mapping.get(action)
         if handler is None:
@@ -339,8 +356,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         await message.answer(UNKNOWN_COMMAND_TEXT, reply_markup=main_menu())
 
 
-async def run() -> None:
-    settings = load_settings()
+async def run(settings=None) -> None:
+    settings = settings or load_settings()
     setup_event_logger(settings.log_level)
 
     db = Database(settings.database_path)

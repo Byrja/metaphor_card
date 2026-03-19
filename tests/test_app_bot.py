@@ -89,6 +89,7 @@ class BotInlineFlowTests(unittest.TestCase):
                     "act:history",
                     "act:saveinsight",
                     "act:nudge",
+                    "act:saveinsight",
                 ],
             )
 
@@ -105,6 +106,7 @@ class BotInlineFlowTests(unittest.TestCase):
                 "act:history": "Пока здесь пусто",
                 "act:saveinsight": "Напиши одним сообщением свой инсайт",
                 "act:nudge": "данных для персональной подсказки мало",
+                "act:saveinsight": "напиши одним сообщением свой инсайт",
             }
 
             for action, expected in action_expectations.items():

@@ -26,9 +26,18 @@ class FakeMessage:
         self.answers: list[str] = []
         self.answer_kwargs: list[dict] = []
 
-    async def answer(self, text: str, **kwargs) -> None:
+    async def answer(self, text: str, reply_markup=None, **kwargs) -> None:
         self.answers.append(text)
-        self.answer_kwargs.append(kwargs)
+        payload = dict(kwargs)
+        payload["reply_markup"] = reply_markup
+        self.answer_kwargs.append(payload)
+
+    async def answer_photo(self, photo, caption: str | None = None, reply_markup=None, **kwargs) -> None:
+        self.answers.append(caption or "")
+        payload = dict(kwargs)
+        payload["reply_markup"] = reply_markup
+        payload["photo"] = photo
+        self.answer_kwargs.append(payload)
 
 
 class FakeCallbackQuery:
@@ -71,7 +80,7 @@ async def main() -> int:
 
         start_message = FakeMessage(user, "/start")
         await start_handler(start_message)
-        if not start_message.answers or "саморефлексия" not in start_message.answers[-1].lower():
+        if not start_message.answers or "Бережная саморефлексия" not in start_message.answers[-1]:
             raise RuntimeError("/start smoke failed")
         markup = start_message.answer_kwargs[-1].get("reply_markup")
         callback_data = [button.callback_data for row in markup.inline_keyboard for button in row] if markup else []
