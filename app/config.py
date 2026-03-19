@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
@@ -11,6 +12,7 @@ DEFAULT_DATABASE_PATH = "data/metaphor_card.db"
 DEFAULT_CONTENT_ROOT = "content"
 DEFAULT_ENV = "dev"
 DEFAULT_LOG_LEVEL = "INFO"
+DEFAULT_POLLING_LOCK_NAME = "polling.lock"
 VALID_ENVS = {"dev", "prod"}
 VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
 PLACEHOLDER_BOT_TOKENS = {
@@ -31,6 +33,7 @@ class Settings:
     log_level: str = DEFAULT_LOG_LEVEL
     app_env: str = DEFAULT_ENV
     content_root: str = DEFAULT_CONTENT_ROOT
+    polling_lock_path: str = str(Path(DEFAULT_DATABASE_PATH).with_name(DEFAULT_POLLING_LOCK_NAME))
 
 
 def _normalize_bot_token(raw_value: str | None) -> str:
@@ -74,14 +77,36 @@ def _normalize_content_root(raw_value: str | None) -> str:
     return str(Path(root).expanduser())
 
 
+def _derive_polling_lock_path(database_path: str) -> str:
+    if database_path == ":memory:":
+        return str(Path(tempfile.gettempdir()) / "metaphor_card" / DEFAULT_POLLING_LOCK_NAME)
+
+    database = Path(database_path)
+    return str(database.with_name(DEFAULT_POLLING_LOCK_NAME))
+
+
+
+def _normalize_polling_lock_path(raw_value: str | None, *, database_path: str) -> str:
+    path = (raw_value or "").strip()
+    if not path:
+        return _derive_polling_lock_path(database_path)
+    return str(Path(path).expanduser())
+
+
+
 def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     load_dotenv()
     env = environ if environ is not None else os.environ
+    database_path = _normalize_database_path(env.get("DATABASE_PATH"))
 
     return Settings(
         bot_token=_normalize_bot_token(env.get("BOT_TOKEN")),
-        database_path=_normalize_database_path(env.get("DATABASE_PATH")),
+        database_path=database_path,
         log_level=_normalize_log_level(env.get("LOG_LEVEL")),
         app_env=_normalize_app_env(env.get("APP_ENV")),
         content_root=_normalize_content_root(env.get("CONTENT_ROOT")),
+        polling_lock_path=_normalize_polling_lock_path(
+            env.get("POLLING_LOCK_PATH"),
+            database_path=database_path,
+        ),
     )
