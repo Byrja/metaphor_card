@@ -16,6 +16,7 @@ SITUATION_QUESTION = "Вопрос для мягкого фокуса: {prompt}"
 SITUATION_SAVE_HINT = "Если появится ясная формулировка, сохрани её через /insight <текст>."
 
 INSIGHT_USAGE_TEXT = "Добавь текст после команды: /insight мой вывод"
+INSIGHT_PROMPT_TEXT = "✍️ Напиши одним сообщением свой инсайт — я сохраню его в историю."
 INSIGHT_SAVED_TEXT = "Сохранил. Если захочешь, можно вернуться через /history, /patterns или /nudge."
 
 HISTORY_EMPTY_TEXT = "Пока здесь пусто. Первый инсайт можно сохранить через /insight <текст>."

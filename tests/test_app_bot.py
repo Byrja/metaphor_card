@@ -51,9 +51,7 @@ class BotInlineFlowTests(unittest.TestCase):
     def setUp(self) -> None:
         state.last_session_by_user.clear()
         state.pending_insight_by_user.clear()
-        state.awaiting_insight_by_user.clear()
-        state.active_session_by_user.clear()
-        state.completed_session_by_user.clear()
+        state.awaiting_free_text_insight_by_user.clear()
         self._tmpdir = tempfile.TemporaryDirectory()
         db_path = Path(self._tmpdir.name) / "test.sqlite3"
         self.db = Database(db_path.as_posix())
@@ -95,6 +93,7 @@ class BotInlineFlowTests(unittest.TestCase):
                     "act:situation",
                     "act:patterns",
                     "act:history",
+                    "act:saveinsight",
                     "act:nudge",
                     "act:saveinsight",
                 ],
@@ -111,6 +110,7 @@ class BotInlineFlowTests(unittest.TestCase):
                 "act:situation": "ситуацию",
                 "act:patterns": "Пока данных мало",
                 "act:history": "Пока здесь пусто",
+                "act:saveinsight": "Напиши одним сообщением свой инсайт",
                 "act:nudge": "данных для персональной подсказки мало",
                 "act:saveinsight": "напиши одним сообщением свой инсайт",
             }
@@ -223,6 +223,44 @@ class BotInlineFlowTests(unittest.TestCase):
 
             self.assertEqual(callback.answer_calls[-1]["text"], "Неизвестное действие")
             self.assertFalse(callback.message.answers)
+
+        asyncio.run(scenario())
+
+    def test_saveinsight_callback_marks_user_and_prompts_for_text(self):
+        async def scenario() -> None:
+            callback_handler = self._get_callback_handler("action_menu")
+            message = FakeMessage(self.user, "/start")
+            callback = FakeCallbackQuery("act:saveinsight", message)
+
+            await callback_handler(callback)
+
+            self.assertIn(self.user.id, state.awaiting_free_text_insight_by_user)
+            self.assertIn("Напиши одним сообщением свой инсайт", message.answers[-1])
+            self.assertEqual(callback.answer_calls[-1]["text"], None)
+
+        asyncio.run(scenario())
+
+    def test_free_text_after_saveinsight_callback_is_saved_to_history(self):
+        async def scenario() -> None:
+            callback_handler = self._get_callback_handler("action_menu")
+            fallback_handler = self._get_message_handler("fallback")
+
+            start_message = FakeMessage(self.user, "/start")
+            callback = FakeCallbackQuery("act:saveinsight", start_message)
+            await callback_handler(callback)
+
+            insight_message = FakeMessage(self.user, "Сегодня мне важно делать паузу")
+            await fallback_handler(insight_message)
+
+            saved_user_id = self.db.upsert_user(self.user.id, self.user.username, self.user.full_name)
+            rows = self.db.get_recent_insights(saved_user_id, limit=5)
+
+            self.assertEqual(rows[0]["insight_text"], "Сегодня мне важно делать паузу")
+            self.assertNotIn(self.user.id, state.awaiting_free_text_insight_by_user)
+            self.assertIn("Сохранил.", insight_message.answers[-1])
+            markup = insight_message.answer_kwargs[-1]["reply_markup"]
+            callback_data = [button.callback_data for row in markup.inline_keyboard for button in row]
+            self.assertIn("act:saveinsight", callback_data)
 
         asyncio.run(scenario())
 
