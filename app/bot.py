@@ -527,6 +527,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await callback.answer("Неизвестное действие", show_alert=False)
             return
         await callback.answer()
+        actor = getattr(callback, "from_user", None) or callback.message.from_user
+        callback.message.from_user = actor
         await handler(callback.message)
 
     @dp.message(F.text)
