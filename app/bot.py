@@ -255,8 +255,10 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
     async def send_checkin(message: Message) -> None:
         user = message.from_user
         assert user is not None
-        clear_active_session(user.id, mark_aborted=True)
         user_id = db.upsert_user(user.id, user.username, user.full_name)
+        clear_active_session(user.id, mark_aborted=True)
+        state.awaiting_insight_by_user.discard(user.id)
+
         session_id = db.create_session(user_id, "check_in")
         state.last_session_by_user[user.id] = session_id
         log_event("session_started", user_id=user_id, session_id=session_id, scenario_type="check_in")
