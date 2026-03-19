@@ -424,6 +424,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService, set
             await answer_user(callback.message, UNKNOWN_COMMAND_TEXT)
             return
         await callback.answer()
+        actor = getattr(callback, "from_user", None) or callback.message.from_user
+        callback.message.from_user = actor
         await handler(callback.message)
 
     @dp.callback_query()
