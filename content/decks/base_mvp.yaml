@@ -7,7 +7,7 @@ deck:
 
 cards:
   - code: misty_lake
-    title: Туманное озеро
+    title: Зеркало
     image_uri: assets/cards/style-c/drafts/file_59---bd1b7387-d844-42e0-bc2c-121c6c546b52.jpg
     themes: [anxiety, self_worth]
     archetypes: [mirror, shelter]
@@ -23,7 +23,7 @@ cards:
     intensity_level: 3
 
   - code: quiet_lighthouse
-    title: Тихий маяк
+    title: Пауза
     image_uri: assets/cards/style-c/drafts/file_80---3d27e9a3-5661-475e-9d78-9c36ba2fd60b.jpg
     themes: [anxiety, boundaries]
     archetypes: [shelter, bridge]
@@ -31,7 +31,7 @@ cards:
     intensity_level: 1
 
   - code: garden_after_rain
-    title: Сад после дождя
+    title: Сад
     image_uri: assets/cards/style-c/drafts/file_67---2344ba4f-dfc0-4564-9ab5-93739aed809b.jpg
     themes: [relationships, self_worth]
     archetypes: [seed, mirror]
@@ -39,7 +39,7 @@ cards:
     intensity_level: 3
 
   - code: workshop_door
-    title: Дверь в мастерскую
+    title: Дверь
     image_uri: assets/cards/style-c/drafts/file_65---8f59e8e4-429e-490a-a836-399ccb94beeb.jpg
     themes: [work, money]
     archetypes: [path, bridge]
