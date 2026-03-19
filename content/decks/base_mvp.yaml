@@ -8,7 +8,7 @@ deck:
 cards:
   - code: misty_lake
     title: Туманное озеро
-    image_uri: assets/cards/misty_lake.jpg
+    image_uri: assets/cards/style-c/drafts/file_59---bd1b7387-d844-42e0-bc2c-121c6c546b52.jpg
     themes: [anxiety, self_worth]
     archetypes: [mirror, shelter]
     emotional_tags: [tension, fear, curiosity]
