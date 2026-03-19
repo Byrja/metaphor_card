@@ -24,13 +24,25 @@ class FakeMessage:
         self.from_user = user
         self.text = text
         self.answers: list[str] = []
+        self.answer_kwargs: list[dict] = []
 
-    async def answer(self, text: str) -> None:
+    async def answer(self, text: str, **kwargs) -> None:
         self.answers.append(text)
+        self.answer_kwargs.append(kwargs)
 
 
-def _get_handler(dp: Dispatcher, name: str):
-    for handler in dp.message.handlers:
+class FakeCallbackQuery:
+    def __init__(self, data: str, message: FakeMessage | None) -> None:
+        self.data = data
+        self.message = message
+        self.answer_calls: list[dict] = []
+
+    async def answer(self, text: str | None = None, show_alert: bool | None = None) -> None:
+        self.answer_calls.append({"text": text, "show_alert": show_alert})
+
+
+def _get_handler(handlers, name: str):
+    for handler in handlers:
         if getattr(handler.callback, "__name__", "") == name:
             return handler.callback
     raise RuntimeError(f"Handler '{name}' not found")
@@ -50,17 +62,40 @@ async def main() -> int:
 
         user = FakeUser(id=4242, username="smoke", full_name="Smoke Test")
 
-        start_handler = _get_handler(dp, "start")
-        checkin_handler = _get_handler(dp, "checkin")
-        situation_handler = _get_handler(dp, "situation")
-        insight_handler = _get_handler(dp, "insight")
+        start_handler = _get_handler(dp.message.handlers, "start")
+        checkin_handler = _get_handler(dp.message.handlers, "checkin")
+        situation_handler = _get_handler(dp.message.handlers, "situation")
+        insight_handler = _get_handler(dp.message.handlers, "insight")
+        action_handler = _get_handler(dp.callback_query.handlers, "action_menu")
 
         start_message = FakeMessage(user, "/start")
         await start_handler(start_message)
-        if not start_message.answers or "саморефлексии" not in start_message.answers[-1]:
+        if not start_message.answers or "саморефлексия" not in start_message.answers[-1].lower():
             raise RuntimeError("/start smoke failed")
+        markup = start_message.answer_kwargs[-1].get("reply_markup")
+        callback_data = [button.callback_data for row in markup.inline_keyboard for button in row] if markup else []
+        expected_actions = ["act:day", "act:checkin", "act:situation", "act:patterns", "act:history", "act:nudge"]
+        if callback_data != expected_actions:
+            raise RuntimeError(f"/start inline menu mismatch: {callback_data}")
         print("[smoke] /start ok")
         print(start_message.answers[-1])
+
+        for action in expected_actions:
+            callback_message = FakeMessage(user, "/start")
+            callback = FakeCallbackQuery(action, callback_message)
+            await action_handler(callback)
+            if not callback.answer_calls:
+                raise RuntimeError(f"{action} callback did not answer")
+            if not callback_message.answers:
+                raise RuntimeError(f"{action} callback did not render content")
+            print(f"[smoke] {action} callback ok")
+            print(callback_message.answers[-1])
+
+        unknown_callback = FakeCallbackQuery("act:unknown", FakeMessage(user, "/start"))
+        await action_handler(unknown_callback)
+        if unknown_callback.answer_calls[-1]["text"] != "Неизвестное действие":
+            raise RuntimeError("unknown callback fallback failed")
+        print("[smoke] unknown callback fallback ok")
 
         checkin_message = FakeMessage(user, "/checkin")
         await checkin_handler(checkin_message)
