@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
 from aiogram import Dispatcher
+from _bootstrap import ensure_repo_root_on_path
+
+ensure_repo_root_on_path()
 
 from app.bot import register_handlers, state
 from app.content import ContentService

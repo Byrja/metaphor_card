@@ -1,4 +1,4 @@
-.PHONY: ux-map-check ux-map-apply ux-v3-check ux-v3-dry ux-v3-apply ux-v4-check ux-v4-dry ux-v4-apply cards-check cards-prepare-approved
+.PHONY: ux-map-check ux-map-apply ux-v3-check ux-v3-dry ux-v3-apply ux-v4-check ux-v4-dry ux-v4-apply cards-check cards-prepare-approved smoke check
 
 PYTHON ?= python3
 UX_MAP_PATH ?= docs/UX_PATCH_MAP_PYTHON_v2.json
@@ -35,3 +35,12 @@ cards-check:
 
 cards-prepare-approved:
 	$(PYTHON) scripts/cards_prepare_approved.py
+
+smoke:
+	bash scripts/smoke.sh
+
+check:
+	pytest -q
+	$(MAKE) ux-v4-check
+	$(MAKE) cards-check
+	$(MAKE) smoke
