@@ -500,7 +500,12 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         if action == "menu":
             clear_active_session(user.id, mark_aborted=False)
             await callback.answer()
-            await send_start(callback.message)
+            await callback.message.edit_text(START_TEXT, reply_markup=main_menu())
+            return
+
+        if action == "about":
+            await callback.answer()
+            await callback.message.edit_text(MAK_INFO_TEXT, reply_markup=main_menu())
             return
 
         mapping = {
@@ -511,7 +516,6 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             "patterns": send_patterns,
             "nudge": send_nudge,
             "saveinsight": send_save_prompt,
-            "about": send_about_mak,
         }
         handler = mapping.get(action)
         if handler is None:
