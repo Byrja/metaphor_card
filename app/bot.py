@@ -44,6 +44,16 @@ SESSION_STEPS = (
 
 SKIPPED_ANSWER = "Пропущено"
 
+MAK_INFO_TEXT = (
+    "Что такое МАК?\n"
+    "Метафорические ассоциативные карты (МАК) — это инструмент самопознания.\n"
+    "Ты смотришь на изображение и описываешь свои чувства, мысли и ассоциации.\n\n"
+    "Главный принцип: карта значит то, что ты в ней видишь.\n"
+    "Здесь нет правильных или неправильных ответов.\n\n"
+    "МАК не предсказывают будущее и не ставят диагнозы.\n"
+    "Они помогают лучше понять своё состояние и увидеть новый взгляд на ситуацию."
+)
+
 
 @dataclass
 class MiniSession:
@@ -181,6 +191,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                 ],
                 [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
                 [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
+                [InlineKeyboardButton(text="ℹ️ Что такое МАК", callback_data="act:about")],
             ]
         )
 
@@ -223,6 +234,9 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         log_event("user_started", user_id=user_id)
         await message.answer(START_TEXT, reply_markup=main_menu())
+
+    async def send_about_mak(message: Message) -> None:
+        await message.answer(MAK_INFO_TEXT, reply_markup=main_menu())
 
     def save_completed_session_result(user_telegram_id: int, user_id: int, session: MiniSession) -> None:
         if session.saved:
@@ -497,6 +511,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             "patterns": send_patterns,
             "nudge": send_nudge,
             "saveinsight": send_save_prompt,
+            "about": send_about_mak,
         }
         handler = mapping.get(action)
         if handler is None:
@@ -504,8 +519,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             return
         await callback.answer()
         actor = getattr(callback, "from_user", None) or callback.message.from_user
-        callback.message.from_user = actor
-        await handler(callback.message)
+        message_for_handler = callback.message.model_copy(update={"from_user": actor})
+        await handler(message_for_handler)
 
     @dp.message(F.text)
     async def fallback(message: Message) -> None:
