@@ -21,46 +21,46 @@
 ---
 
 ## CURRENT SPRINT GOAL (48h)
-Собрать стабильный MVP с приятным UX и картами Style-C + гибридный AI summary.
+UX-revamp для реального использования МАК: выбор режима пользователем + улучшенные вопросы + подготовка мульти-колод.
 
 ---
 
 ## TRACK A — CODEX (runtime/quality/integration)
 
-### C-01 Inline UX stability
-- Проверить новые inline-кнопки и callback flow (`/start`, day/checkin/situation/history/patterns/nudge).
-- Исправить любые runtime ошибки callback/typing/import.
+### C-01 Inline UX reliability (P0)
+- Починить и закрепить inline flow без падений (`frozen Message`, callback-crash).
+- Удалить внешние автосинк-процессы, которые откатывают runtime-фиксы.
 
 **DoD:**
-- `/start` показывает меню кнопок
-- все кнопки отвечают
-- fallback корректный
+- `/start` показывает меню
+- все inline-кнопки отвечают
+- в логах нет повторяющегося `ValidationError ... Message.from_user`
 
-### C-02 Polling reliability
-- Single-instance guard для polling (исключить 409 conflicts).
-- Док в runbook: как безопасно рестартить.
-
-**DoD:**
-- нет регулярных 409 в логах при штатном запуске
-
-### C-03 Cards pipeline hardening
-- Поддерживать `make cards-check` = green без ручных танцев.
-- Поддерживать `make cards-prepare-approved` = green.
-- Синхрон draft/manifest при обновлениях.
+### C-02 Session preferences (P0)
+- Добавить пользовательские настройки сессии:
+  - стиль: мягко / баланс / коуч
+  - глубина: коротко / средне / глубоко
+  - тон: дружелюбный / нейтральный / прямой
+- Применять настройки к сценарию в runtime.
 
 **DoD:**
-- `cards-check`, `cards-prepare-approved`, `pytest`, `smoke` green
+- настройки переключаются кнопками
+- сценарий реально меняет глубину/формулировки
 
-### C-04 AI integration scaffold (hybrid)
-- Добавить провайдер-клиент (OpenRouter-ready) в отдельный модуль:
-  - `summarize_reflection(context)`
-  - `next_small_step(context)`
-- Добавить fallback rule-based при недоступности AI.
-- Вызов AI только в конце сценариев (cost-safe).
+### C-03 Questions revamp (P0)
+- Переписать ядро вопросов (главная боль продукта).
+- Сделать версии вопросов под 3 стиля и 3 уровня глубины.
 
 **DoD:**
-- фича-флаг AI
-- при выключенном AI всё работает как раньше
+- минимум 2 тест-сценария на каждый стиль
+- текст ощущается «живым», не шаблонным
+
+### C-04 Multi-deck readiness (P1)
+- Подготовить структуру для нескольких колод (базовая + тематические).
+- Добавить выбор колоды в сценарии (без ломки текущего flow).
+
+**DoD:**
+- можно подключить новую колоду без правок core-логики
 
 ---
 

@@ -5,33 +5,29 @@ Runtime, integration, tests, deployment reliability.
 
 ## Current tasks
 
-### C-01 Inline UX stability
-- Проверить inline-кнопки и callback flow (`/start`, day/checkin/situation/history/patterns/nudge).
-- Исправить runtime ошибки callback/import/typing.
+### C-01 Inline UX reliability (P0)
+- Убрать runtime-crash в callback flow.
+- Проверить, что кнопки отвечают стабильно в Telegram.
 
-**DoD:** все кнопки отвечают, fallback корректный.
+**DoD:** нет падений на нажатиях, меню работает целиком.
 
-### C-02 Polling reliability
-- Single-instance guard, исключить 409 conflicts.
-- Обновить runbook по безопасному рестарту.
+### C-02 Session preferences (P0)
+- Настройки пользователя: стиль/глубина/тон.
+- Привязать настройки к генерации сессии.
 
-**DoD:** нет регулярных 409 при штатном запуске.
+**DoD:** пользователь меняет настройки и получает другой сценарий.
 
-### C-03 Cards pipeline hardening
-- `make cards-check` green по умолчанию.
-- `make cards-prepare-approved` green.
-- Синхрон draft/manifest при обновлениях.
+### C-03 Questions revamp (P0)
+- Переписать вопросы под режимы (soft/balance/coach) и глубину.
+- Снизить шаблонность и повысить «попадание» в состояние.
 
-**DoD:** pytest/smoke/cards-check/cards-prepare-approved — green.
+**DoD:** сценарии воспринимаются как осмысленные, не механические.
 
-### C-04 AI integration scaffold (hybrid)
-- OpenRouter-ready client в отдельном модуле:
-  - `summarize_reflection(context)`
-  - `next_small_step(context)`
-- fallback rule-based при недоступности AI.
-- вызов AI только в конце сценариев.
+### C-04 Multi-deck readiness (P1)
+- Подготовить архитектуру для разных колод.
+- Добавить механизм выбора колоды.
 
-**DoD:** feature-flag AI + обратная совместимость.
+**DoD:** новая колода подключается без изменения core-обработчиков.
 
 ## Reporting format
 ```
