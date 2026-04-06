@@ -76,9 +76,27 @@ class BotState:
         self.awaiting_insight_by_user: set[int] = set()
         self.active_session_by_user: dict[int, MiniSession] = {}
         self.completed_session_by_user: dict[int, MiniSession] = {}
+        self.session_mode_by_user: dict[int, str] = {}
 
 
 state = BotState()
+
+
+def get_mode(user_telegram_id: int) -> str:
+    return state.session_mode_by_user.get(user_telegram_id, "balance")
+
+
+def set_mode(user_telegram_id: int, mode: str) -> None:
+    if mode in {"soft", "balance", "coach"}:
+        state.session_mode_by_user[user_telegram_id] = mode
+
+
+def mode_label(mode: str) -> str:
+    return {"soft": "мягко", "balance": "баланс", "coach": "коуч"}.get(mode, "баланс")
+
+
+def mode_safety(mode: str) -> str:
+    return "conservative" if mode == "soft" else "normal"
 
 
 def format_history(rows) -> str:
@@ -190,6 +208,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                     InlineKeyboardButton(text="📚 История", callback_data="act:history"),
                 ],
                 [InlineKeyboardButton(text="✨ Мягкая подсказка", callback_data="act:nudge")],
+                [InlineKeyboardButton(text="⚙️ Режим сессии", callback_data="act:mode")],
                 [InlineKeyboardButton(text="💾 Сохранить инсайт", callback_data="act:saveinsight")],
                 [InlineKeyboardButton(text="ℹ️ Что такое МАК", callback_data="act:about")],
             ]
@@ -209,6 +228,19 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                 [InlineKeyboardButton(text="💾 Сохранить", callback_data="act:save_session_insight")],
                 [InlineKeyboardButton(text="🔁 Ещё карта", callback_data="act:new_card")],
                 [InlineKeyboardButton(text="🏠 В меню", callback_data="act:menu")],
+            ]
+        )
+
+    def session_mode_menu(user_telegram_id: int) -> InlineKeyboardMarkup:
+        current = get_mode(user_telegram_id)
+        def mark(v: str) -> str:
+            return "✅" if v == current else "▫️"
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text=f"{mark('soft')} мягко", callback_data="act:mode_set_soft")],
+                [InlineKeyboardButton(text=f"{mark('balance')} баланс", callback_data="act:mode_set_balance")],
+                [InlineKeyboardButton(text=f"{mark('coach')} коуч", callback_data="act:mode_set_coach")],
+                [InlineKeyboardButton(text="🔙 Назад", callback_data="act:menu")],
             ]
         )
 
@@ -273,7 +305,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         log_event("session_started", user_id=user_id, session_id=session_id, scenario_type=scenario_type)
 
         if scenario_type == "day_card":
-            card = content.random_day_card(safety_mode="normal")
+            card = content.random_day_card(safety_mode=mode_safety(get_mode(user.id)))
             caption = DAY_CARD_TEXT.format(title=card.title, prompt=session_step_text(0, content))
             session = MiniSession(
                 user_id=user_id,
@@ -287,7 +319,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await send_card_with_optional_image(message, card, caption, active_session_menu())
             return
 
-        cards = content.random_situation_cards(safety_mode="normal")
+        cards = content.random_situation_cards(safety_mode=mode_safety(get_mode(user.id)))
         lines = [SITUATION_TITLE]
         for prompt, card in zip(SITUATION_PROMPTS, cards):
             lines.append(f"- {prompt} {card.title}")
@@ -340,7 +372,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         state.last_session_by_user[user.id] = session_id
         log_event("session_started", user_id=user_id, session_id=session_id, scenario_type="check_in")
 
-        card = content.random_day_card(safety_mode="conservative")
+        card = content.random_day_card(safety_mode=mode_safety(get_mode(user.id)))
         caption = "\n".join([
             CHECKIN_TITLE,
             CHECKIN_CARD.format(title=card.title),
@@ -500,12 +532,44 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         if action == "menu":
             clear_active_session(user.id, mark_aborted=False)
             await callback.answer()
-            await callback.message.edit_text(START_TEXT, reply_markup=main_menu())
+            if hasattr(callback.message, "edit_text"):
+                await callback.message.edit_text(START_TEXT, reply_markup=main_menu())
+            else:
+                await callback.message.answer(START_TEXT, reply_markup=main_menu())
             return
 
         if action == "about":
             await callback.answer()
-            await callback.message.edit_text(MAK_INFO_TEXT, reply_markup=main_menu())
+            if hasattr(callback.message, "edit_text"):
+                await callback.message.edit_text(MAK_INFO_TEXT, reply_markup=main_menu())
+            else:
+                await callback.message.answer(MAK_INFO_TEXT, reply_markup=main_menu())
+            return
+
+        if action == "mode":
+            await callback.answer()
+            mode_text = (
+                f"⚙️ Режим сессии: <b>{mode_label(get_mode(user.id))}</b>\n\n"
+                "Выбери, как бот задаёт вопросы:\n"
+                "• мягко — спокойный, бережный ритм\n"
+                "• баланс — нейтральный универсальный\n"
+                "• коуч — более прямой фокус на шаги"
+            )
+            if hasattr(callback.message, "edit_text"):
+                await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
+            else:
+                await callback.message.answer(mode_text, reply_markup=session_mode_menu(user.id))
+            return
+
+        if action.startswith("mode_set_"):
+            mode = action.replace("mode_set_", "")
+            set_mode(user.id, mode)
+            await callback.answer("Режим сохранён")
+            saved_text = f"⚙️ Режим сессии сохранён: <b>{mode_label(get_mode(user.id))}</b>"
+            if hasattr(callback.message, "edit_text"):
+                await callback.message.edit_text(saved_text, reply_markup=main_menu())
+            else:
+                await callback.message.answer(saved_text, reply_markup=main_menu())
             return
 
         mapping = {
@@ -523,7 +587,15 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             return
         await callback.answer()
         actor = getattr(callback, "from_user", None) or callback.message.from_user
-        message_for_handler = callback.message.model_copy(update={"from_user": actor})
+        if hasattr(callback.message, "model_copy"):
+            message_for_handler = callback.message.model_copy(update={"from_user": actor})
+        else:
+            # smoke tests provide FakeMessage without pydantic model_copy
+            message_for_handler = callback.message
+            try:
+                message_for_handler.from_user = actor
+            except Exception:
+                pass
         await handler(message_for_handler)
 
     @dp.message(F.text)

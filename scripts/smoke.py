@@ -84,7 +84,7 @@ async def main() -> int:
             raise RuntimeError("/start smoke failed")
         markup = start_message.answer_kwargs[-1].get("reply_markup")
         callback_data = [button.callback_data for row in markup.inline_keyboard for button in row] if markup else []
-        expected_actions = ["act:day", "act:checkin", "act:situation", "act:patterns", "act:history", "act:nudge", "act:saveinsight"]
+        expected_actions = ["act:day", "act:checkin", "act:situation", "act:patterns", "act:history", "act:nudge", "act:mode", "act:saveinsight", "act:about"]
         if callback_data != expected_actions:
             raise RuntimeError(f"/start inline menu mismatch: {callback_data}")
         print("[smoke] /start ok")
