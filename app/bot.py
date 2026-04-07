@@ -611,8 +611,11 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         if action == "mode":
             await callback.answer()
             mode_text = (
-                f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>\n\n"
-                "Выбери стиль и глубину сессии."
+                f"⚙️ <b>Настройки сессии</b>\n"
+                f"Текущий стиль: <b>{mode_label(get_mode(user.id))}</b>\n"
+                f"Текущая глубина: <b>{depth_label(get_depth(user.id))}</b>\n\n"
+                "Стиль = как формулируются вопросы.\n"
+                "Глубина = сколько шагов будет в сессии."
             )
             if hasattr(callback.message, "edit_text"):
                 await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
@@ -628,7 +631,10 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             mode = action.replace("mode_set_", "")
             set_mode(user.id, mode)
             await callback.answer("Режим сохранён")
-            mode_text = f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>"
+            mode_text = (
+                f"✅ Стиль обновлён: <b>{mode_label(get_mode(user.id))}</b>\n"
+                f"Глубина: <b>{depth_label(get_depth(user.id))}</b>"
+            )
             if hasattr(callback.message, "edit_text"):
                 await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
             else:
@@ -639,7 +645,10 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             depth = action.replace("depth_set_", "")
             set_depth(user.id, depth)
             await callback.answer("Глубина сохранена")
-            mode_text = f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>"
+            mode_text = (
+                f"Стиль: <b>{mode_label(get_mode(user.id))}</b>\n"
+                f"✅ Глубина обновлена: <b>{depth_label(get_depth(user.id))}</b>"
+            )
             if hasattr(callback.message, "edit_text"):
                 await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
             else:
