@@ -29,6 +29,8 @@ from app.ux_copy import (
     UNKNOWN_COMMAND_TEXT,
 )
 
+PREFS_PATH = Path('/srv/openclaw-bus/metaphor_card/state/session_prefs.json')
+
 SITUATION_PROMPTS = [
     "Карта 1 — где ты сейчас.",
     "Карта 2 — что мешает.",
@@ -106,6 +108,33 @@ class BotState:
 state = BotState()
 
 
+def load_session_prefs() -> None:
+    try:
+        if not PREFS_PATH.exists():
+            return
+        data = json.loads(PREFS_PATH.read_text(encoding='utf-8'))
+        if not isinstance(data, dict):
+            return
+        modes = data.get('mode_by_user', {}) or {}
+        depths = data.get('depth_by_user', {}) or {}
+        state.session_mode_by_user = {int(k): v for k, v in modes.items() if v in {'soft', 'balance', 'coach'}}
+        state.session_depth_by_user = {int(k): v for k, v in depths.items() if v in {'short', 'medium', 'deep'}}
+    except Exception:
+        pass
+
+
+def save_session_prefs() -> None:
+    try:
+        PREFS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            'mode_by_user': {str(k): v for k, v in state.session_mode_by_user.items()},
+            'depth_by_user': {str(k): v for k, v in state.session_depth_by_user.items()},
+        }
+        PREFS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+    except Exception:
+        pass
+
+
 def get_mode(user_telegram_id: int) -> str:
     return state.session_mode_by_user.get(user_telegram_id, "balance")
 
@@ -113,6 +142,7 @@ def get_mode(user_telegram_id: int) -> str:
 def set_mode(user_telegram_id: int, mode: str) -> None:
     if mode in {"soft", "balance", "coach"}:
         state.session_mode_by_user[user_telegram_id] = mode
+        save_session_prefs()
 
 
 def mode_label(mode: str) -> str:
@@ -130,6 +160,7 @@ def get_depth(user_telegram_id: int) -> str:
 def set_depth(user_telegram_id: int, depth: str) -> None:
     if depth in {"short", "medium", "deep"}:
         state.session_depth_by_user[user_telegram_id] = depth
+        save_session_prefs()
 
 
 def depth_label(depth: str) -> str:
@@ -706,6 +737,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 async def run(settings=None) -> None:
     settings = settings or load_settings()
     setup_event_logger(settings.log_level)
+    load_session_prefs()
 
     db = Database(settings.database_path)
     db.init_schema()
