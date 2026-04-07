@@ -42,6 +42,29 @@ SESSION_STEPS = (
     ("step", "Какой маленький и реалистичный шаг на сегодня здесь просится?", "l4"),
 )
 
+MODE_LEADS = {
+    "soft": (
+        "Что первым откликнулось в тебе, когда ты посмотрел(а) на карту?",
+        "С чем в твоей жизни это сейчас бережно перекликается?",
+        "Что здесь хочется признать и поддержать в себе?",
+        "Какой мягкий шаг поможет тебе сегодня?",
+    ),
+    "balance": (
+        "Что ты заметил(а) или почувствовал(а) первым, когда увидел(а) карту?",
+        "На что это похоже в твоей текущей ситуации сегодня?",
+        "Что в этом сейчас самое важное, острое или непростое?",
+        "Какой маленький и реалистичный шаг на сегодня здесь просится?",
+    ),
+    "coach": (
+        "Что на карте бьёт в точку прямо сейчас?",
+        "Где это уже проявляется в твоих действиях сегодня?",
+        "Какой один барьер реально мешает тебе сдвинуться?",
+        "Какой конкретный шаг ты сделаешь сегодня до конца дня?",
+    ),
+}
+
+DEPTH_STEP_COUNT = {"short": 2, "medium": 3, "deep": 4}
+
 SKIPPED_ANSWER = "Пропущено"
 
 MAK_INFO_TEXT = (
@@ -77,6 +100,7 @@ class BotState:
         self.active_session_by_user: dict[int, MiniSession] = {}
         self.completed_session_by_user: dict[int, MiniSession] = {}
         self.session_mode_by_user: dict[int, str] = {}
+        self.session_depth_by_user: dict[int, str] = {}
 
 
 state = BotState()
@@ -97,6 +121,30 @@ def mode_label(mode: str) -> str:
 
 def mode_safety(mode: str) -> str:
     return "conservative" if mode == "soft" else "normal"
+
+
+def get_depth(user_telegram_id: int) -> str:
+    return state.session_depth_by_user.get(user_telegram_id, "medium")
+
+
+def set_depth(user_telegram_id: int, depth: str) -> None:
+    if depth in {"short", "medium", "deep"}:
+        state.session_depth_by_user[user_telegram_id] = depth
+
+
+def depth_label(depth: str) -> str:
+    return {"short": "коротко", "medium": "средне", "deep": "глубоко"}.get(depth, "средне")
+
+
+def active_steps(user_telegram_id: int) -> tuple[tuple[str, str, str], ...]:
+    mode = get_mode(user_telegram_id)
+    leads = MODE_LEADS.get(mode, MODE_LEADS["balance"])
+    steps = list(SESSION_STEPS)
+    for i in range(len(steps)):
+        key, _, layer = steps[i]
+        steps[i] = (key, leads[i], layer)
+    count = DEPTH_STEP_COUNT.get(get_depth(user_telegram_id), 3)
+    return tuple(steps[:count])
 
 
 def format_history(rows) -> str:
@@ -134,9 +182,10 @@ def rebuild_patterns(db: Database, user_id: int) -> None:
     db.replace_user_patterns(user_id, [(item.key, item.score) for item in scores])
 
 
-def session_step_text(step_index: int, content: ContentService) -> str:
-    _, lead, layer = SESSION_STEPS[step_index]
-    return f"Шаг {step_index + 1}/4. {lead}\nПодсказка: {content.random_prompt(layer)}"
+def session_step_text(user_telegram_id: int, step_index: int, content: ContentService) -> str:
+    steps = active_steps(user_telegram_id)
+    _, lead, layer = steps[step_index]
+    return f"Шаг {step_index + 1}/{len(steps)}. {lead}\nПодсказка: {content.random_prompt(layer)}"
 
 
 def build_session_summary(session: MiniSession) -> tuple[str, str | None]:
@@ -233,13 +282,25 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
     def session_mode_menu(user_telegram_id: int) -> InlineKeyboardMarkup:
         current = get_mode(user_telegram_id)
-        def mark(v: str) -> str:
-            return "✅" if v == current else "▫️"
+        depth = get_depth(user_telegram_id)
+
+        def mark(v: str, cur: str) -> str:
+            return "✅" if v == cur else "▫️"
+
         return InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text=f"{mark('soft')} мягко", callback_data="act:mode_set_soft")],
-                [InlineKeyboardButton(text=f"{mark('balance')} баланс", callback_data="act:mode_set_balance")],
-                [InlineKeyboardButton(text=f"{mark('coach')} коуч", callback_data="act:mode_set_coach")],
+                [InlineKeyboardButton(text="Стиль", callback_data="act:noop")],
+                [
+                    InlineKeyboardButton(text=f"{mark('soft', current)} мягко", callback_data="act:mode_set_soft"),
+                    InlineKeyboardButton(text=f"{mark('balance', current)} баланс", callback_data="act:mode_set_balance"),
+                    InlineKeyboardButton(text=f"{mark('coach', current)} коуч", callback_data="act:mode_set_coach"),
+                ],
+                [InlineKeyboardButton(text="Глубина", callback_data="act:noop")],
+                [
+                    InlineKeyboardButton(text=f"{mark('short', depth)} коротко", callback_data="act:depth_set_short"),
+                    InlineKeyboardButton(text=f"{mark('medium', depth)} средне", callback_data="act:depth_set_medium"),
+                    InlineKeyboardButton(text=f"{mark('deep', depth)} глубоко", callback_data="act:depth_set_deep"),
+                ],
                 [InlineKeyboardButton(text="🔙 Назад", callback_data="act:menu")],
             ]
         )
@@ -306,7 +367,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
 
         if scenario_type == "day_card":
             card = content.random_day_card(safety_mode=mode_safety(get_mode(user.id)))
-            caption = DAY_CARD_TEXT.format(title=card.title, prompt=session_step_text(0, content))
+            caption = DAY_CARD_TEXT.format(title=card.title, prompt=session_step_text(user.id, 0, content))
             session = MiniSession(
                 user_id=user_id,
                 session_id=session_id,
@@ -324,7 +385,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         for prompt, card in zip(SITUATION_PROMPTS, cards):
             lines.append(f"- {prompt} {card.title}")
         lines.append("")
-        lines.append(session_step_text(0, content))
+        lines.append(session_step_text(user.id, 0, content))
         caption = "\n".join(lines)
         session = MiniSession(
             user_id=user_id,
@@ -350,15 +411,16 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await message.answer(safety_reply, reply_markup=main_menu())
             return True
 
-        step_key = SESSION_STEPS[session.current_step][0]
+        steps = active_steps(user.id)
+        step_key = steps[session.current_step][0]
         session.answers[step_key] = answer_text.strip() or SKIPPED_ANSWER
         session.current_step += 1
 
-        if session.current_step >= len(SESSION_STEPS):
+        if session.current_step >= len(steps):
             await finalize_session(message, user.id, user_id, session)
             return True
 
-        await message.answer(session_step_text(session.current_step, content), reply_markup=active_session_menu())
+        await message.answer(session_step_text(user.id, session.current_step, content), reply_markup=active_session_menu())
         return True
 
     async def send_checkin(message: Message) -> None:
@@ -376,7 +438,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         caption = "\n".join([
             CHECKIN_TITLE,
             CHECKIN_CARD.format(title=card.title),
-            session_step_text(0, content),
+            session_step_text(user.id, 0, content),
         ])
 
         session = MiniSession(
@@ -549,11 +611,8 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         if action == "mode":
             await callback.answer()
             mode_text = (
-                f"⚙️ Режим сессии: <b>{mode_label(get_mode(user.id))}</b>\n\n"
-                "Выбери, как бот задаёт вопросы:\n"
-                "• мягко — спокойный, бережный ритм\n"
-                "• баланс — нейтральный универсальный\n"
-                "• коуч — более прямой фокус на шаги"
+                f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>\n\n"
+                "Выбери стиль и глубину сессии."
             )
             if hasattr(callback.message, "edit_text"):
                 await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
@@ -561,15 +620,30 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                 await callback.message.answer(mode_text, reply_markup=session_mode_menu(user.id))
             return
 
+        if action == "noop":
+            await callback.answer()
+            return
+
         if action.startswith("mode_set_"):
             mode = action.replace("mode_set_", "")
             set_mode(user.id, mode)
             await callback.answer("Режим сохранён")
-            saved_text = f"⚙️ Режим сессии сохранён: <b>{mode_label(get_mode(user.id))}</b>"
+            mode_text = f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>"
             if hasattr(callback.message, "edit_text"):
-                await callback.message.edit_text(saved_text, reply_markup=main_menu())
+                await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
             else:
-                await callback.message.answer(saved_text, reply_markup=main_menu())
+                await callback.message.answer(mode_text, reply_markup=session_mode_menu(user.id))
+            return
+
+        if action.startswith("depth_set_"):
+            depth = action.replace("depth_set_", "")
+            set_depth(user.id, depth)
+            await callback.answer("Глубина сохранена")
+            mode_text = f"⚙️ Режим: <b>{mode_label(get_mode(user.id))}</b> · Глубина: <b>{depth_label(get_depth(user.id))}</b>"
+            if hasattr(callback.message, "edit_text"):
+                await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
+            else:
+                await callback.message.answer(mode_text, reply_markup=session_mode_menu(user.id))
             return
 
         mapping = {
