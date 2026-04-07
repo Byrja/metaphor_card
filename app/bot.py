@@ -74,15 +74,15 @@ QUESTION_BANK = {
         ),
         "medium": (
             "Что ты первым заметил(а) на карте?",
-            "На что это похоже в твоей ситуации сегодня?",
-            "Что здесь сейчас самое важное?",
+            "С чем это больше всего связано в твоей жизни сейчас (работа/отношения/деньги/самочувствие)?",
+            "Что здесь сейчас самое важное и о чём нельзя промолчать?",
             "",
         ),
         "deep": (
             "Что ты первым заметил(а) на карте?",
-            "На что это похоже в твоей ситуации сегодня?",
-            "Что здесь самое важное и почему именно это?",
-            "Какой конкретный шаг ты сделаешь сегодня?",
+            "Где это уже проявляется в твоей реальности сегодня?",
+            "Какой внутренний конфликт или страх тут поднимается?",
+            "Какой конкретный шаг ты сделаешь сегодня и во сколько?",
         ),
     },
     "coach": {
@@ -696,6 +696,24 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
                 await callback.message.edit_text(mode_text, reply_markup=session_mode_menu(user.id))
             else:
                 await callback.message.answer(mode_text, reply_markup=session_mode_menu(user.id))
+            return
+
+        if action == "reroll":
+            await callback.answer("Подбираю другую карту…")
+            current = state.active_session_by_user.get(user.id)
+            if not current:
+                await send_new_card(callback.message)
+                return
+            scenario = current.scenario_type
+            clear_active_session(user.id, mark_aborted=True)
+            if scenario == "day_card":
+                await send_day_card(callback.message)
+            elif scenario == "situation":
+                await send_situation(callback.message)
+            elif scenario == "checkin":
+                await send_checkin(callback.message)
+            else:
+                await send_new_card(callback.message)
             return
 
         if action == "noop":
