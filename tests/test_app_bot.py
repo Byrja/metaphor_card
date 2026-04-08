@@ -219,6 +219,23 @@ class BotInlineFlowTests(unittest.TestCase):
 
         asyncio.run(scenario())
 
+    def test_active_session_menu_supports_reroll(self):
+        async def scenario() -> None:
+            day_handler = self._get_message_handler("day_card")
+            callback_handler = self._get_callback_handler("action_menu")
+
+            start = FakeMessage(self.user, "/day")
+            await day_handler(start)
+            callback_data = [button.callback_data for row in start.answer_kwargs[-1]["reply_markup"].inline_keyboard for button in row]
+            self.assertIn("act:reroll", callback_data)
+
+            reroll_callback = FakeCallbackQuery("act:reroll", FakeMessage(self.user, "done"))
+            reroll_callback.from_user = self.user
+            await callback_handler(reroll_callback)
+            self.assertIn("Шаг 1/", reroll_callback.message.answers[-1])
+
+        asyncio.run(scenario())
+
     def test_unknown_callback_uses_fallback_answer(self):
         async def scenario() -> None:
             callback_handler = self._get_callback_handler("action_menu")

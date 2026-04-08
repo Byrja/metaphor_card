@@ -342,6 +342,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
         return InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="⏭️ Пропустить шаг", callback_data="act:skip_step")],
+                [InlineKeyboardButton(text="🔄 Другая карта", callback_data="act:reroll")],
                 [InlineKeyboardButton(text="🏠 В меню", callback_data="act:menu")],
             ]
         )
