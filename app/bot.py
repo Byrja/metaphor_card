@@ -632,7 +632,7 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await callback.answer()
             return
 
-        user = callback.message.from_user
+        user = getattr(callback, "from_user", None) or callback.message.from_user
         assert user is not None
         user_id = db.upsert_user(user.id, user.username, user.full_name)
         action = (callback.data or "").split(":", 1)[1]
