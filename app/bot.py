@@ -702,18 +702,18 @@ def register_handlers(dp: Dispatcher, db: Database, content: ContentService) -> 
             await callback.answer("Подбираю другую карту…")
             current = state.active_session_by_user.get(user.id)
             if not current:
-                await send_new_card(callback.message)
+                await send_day_card(callback.message)
                 return
             scenario = current.scenario_type
             clear_active_session(user.id, mark_aborted=True)
             if scenario == "day_card":
                 await send_day_card(callback.message)
-            elif scenario == "situation":
+            elif scenario == "situation_review":
                 await send_situation(callback.message)
-            elif scenario == "checkin":
+            elif scenario == "check_in":
                 await send_checkin(callback.message)
             else:
-                await send_new_card(callback.message)
+                await send_day_card(callback.message)
             return
 
         if action == "noop":

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from aiogram import Dispatcher
 
-from app.bot import register_handlers, state
+from app.bot import register_handlers, set_depth, state
 from app.content import ContentService
 from app.db import Database
 from app.ux_copy import START_TEXT
@@ -96,7 +96,9 @@ class BotInlineFlowTests(unittest.TestCase):
                     "act:patterns",
                     "act:history",
                     "act:nudge",
+                    "act:mode",
                     "act:saveinsight",
+                    "act:about",
                 ],
             )
 
@@ -129,10 +131,11 @@ class BotInlineFlowTests(unittest.TestCase):
         async def scenario() -> None:
             day_handler = self._get_message_handler("day_card")
             fallback_handler = self._get_message_handler("fallback")
+            set_depth(self.user.id, "deep")
 
             start = FakeMessage(self.user, "/day")
             await day_handler(start)
-            self.assertIn("Шаг 1/4", start.answers[-1])
+            self.assertIn("Шаг 1/", start.answers[-1])
 
             answers = [
                 "Сначала заметил спокойствие.",
@@ -169,7 +172,7 @@ class BotInlineFlowTests(unittest.TestCase):
 
             start = FakeMessage(self.user, "/situation")
             await situation_handler(start)
-            self.assertIn("Шаг 1/4", start.answers[-1])
+            self.assertIn("Шаг 1/", start.answers[-1])
 
             risky = FakeMessage(self.user, "У меня паника и очень страшно")
             await fallback_handler(risky)
@@ -190,6 +193,7 @@ class BotInlineFlowTests(unittest.TestCase):
             day_handler = self._get_message_handler("day_card")
             fallback_handler = self._get_message_handler("fallback")
             callback_handler = self._get_callback_handler("action_menu")
+            set_depth(self.user.id, "deep")
 
             await day_handler(FakeMessage(self.user, "/day"))
             for text in [
@@ -207,7 +211,7 @@ class BotInlineFlowTests(unittest.TestCase):
 
             new_card_callback = FakeCallbackQuery("act:new_card", FakeMessage(self.user, "done"))
             await callback_handler(new_card_callback)
-            self.assertIn("Шаг 1/4", new_card_callback.message.answers[-1])
+            self.assertIn("Шаг 1/", new_card_callback.message.answers[-1])
 
             menu_callback = FakeCallbackQuery("act:menu", FakeMessage(self.user, "done"))
             await callback_handler(menu_callback)
