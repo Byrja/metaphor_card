@@ -206,3 +206,44 @@ make ux-v4-apply
 3. Проверить права на `DATABASE_PATH` и lock-директорию.
 4. Проверить наличие контента в `CONTENT_ROOT`.
 5. Если контент недоступен, бот запустится на fallback-контенте — это допустимый degraded mode, но не финальное production-состояние.
+
+
+## 8. Apply Yandex UX patch-map v2
+Когда от Yandex придёт `docs/UX_PATCH_MAP_PYTHON_v2.json`, его можно прогнать безопасно и воспроизводимо через integration runner.
+
+### Что делает runner
+- валидирует каждый item (`target_file`, `target_symbol`, `old_snippet`, `new_snippet`, `source_key`);
+- работает в режиме all-or-nothing: сначала проверяет все замены в памяти, и только потом пишет файлы;
+- падает, если `old_snippet` не найден, найден больше одного раза или совпадает с `new_snippet`;
+- всегда создаёт отчёт `reports/ux_patch_apply_report.json`.
+
+### Команды
+Проверить, что map корректен и все замены однозначны:
+```bash
+make ux-map-check
+```
+
+Посмотреть diff и отчёт без изменения файлов:
+```bash
+make ux-map-dry
+```
+
+Применить patch-map:
+```bash
+make ux-map-apply
+```
+
+Эквивалентный прямой запуск:
+```bash
+python3 scripts/apply_ux_patch_map.py --map docs/UX_PATCH_MAP_PYTHON_v2.json --dry-run
+python3 scripts/apply_ux_patch_map.py --map docs/UX_PATCH_MAP_PYTHON_v2.json --apply
+```
+
+### Что проверять перед merge/apply
+1. `pytest -q tests/test_apply_ux_patch_map.py` — unit coverage для success / not found / duplicate / no-op.
+2. `make ux-map-dry` — dry-run должен завершаться успешно и сформировать report.
+3. `reports/ux_patch_apply_report.json` — в отчёте должны быть `ok`, `summary`, `items`, `errors`.
+4. Если dry-run упал, не запускать `ux-map-apply`, пока не исправлены target snippets или сам map.
+
+### Примечание про placeholder map
+В репозитории лежит placeholder `docs/UX_PATCH_MAP_PYTHON_v2.json` с пустым `items`, чтобы CI/локальные команды были готовы заранее. После прихода финального файла от Yandex замените содержимое JSON и повторите `make ux-map-dry`.

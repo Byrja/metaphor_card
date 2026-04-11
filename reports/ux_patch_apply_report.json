@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "mode": "dry-run",
+  "map_path": "docs/UX_PATCH_MAP_PYTHON_v2.json",
+  "report_path": "reports/ux_patch_apply_report.json",
+  "summary": {
+    "total": 0,
+    "applied": 0,
+    "ready": 0,
+    "errors": 0
+  },
+  "items": [],
+  "errors": []
+}
