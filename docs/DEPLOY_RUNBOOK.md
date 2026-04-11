@@ -124,7 +124,28 @@ journalctl -u metaphor-card.service -f
 }
 ```
 
-## 6. Smoke после деплоя
+## 6. Как интегрировать UX-пак от Yandex безопасно
+1. Подготовить approved-артефакты в `docs/ux-pack-v3-python/approved/` и обновить `docs/ux-pack-v3-python/manifest.json`. Каждый файл в manifest обязан указывать только целевые пути под `content/` или `docs/` — это страховка от случайного изменения runtime-кода.
+2. Прогнать валидацию пакета:
+   ```bash
+   make ux-check
+   ```
+   Проверка падает, если не хватает обязательных файлов, найдены placeholders (`TODO`, `{{...}}`, `<...>`), символ `�` или сломан `yaml/json`.
+3. Посмотреть dry-run diff перед копированием:
+   ```bash
+   ./scripts/integrate_yandex_ux.sh
+   ```
+4. Применить approved UX-артефакты только после чистого diff/ревью:
+   ```bash
+   ./scripts/integrate_yandex_ux.sh --apply
+   ```
+5. Сразу после интеграции выполнить smoke-прогон:
+   ```bash
+   PYTHONPATH=src:. ./scripts/smoke.sh
+   ```
+6. Для PR приложить proof-блок: output `make ux-check`, output интеграционного dry-run/apply и список изменённых файлов (`git status --short`).
+
+## 7. Smoke после деплоя
 После каждого выката:
 ```bash
 cd /opt/metaphor_card
@@ -139,64 +160,7 @@ PYTHONPATH=src:. ./scripts/smoke.sh
 - smoke проверяет один safety/error microcopy-текст из UX v4;
 - smoke завершает процесс корректно.
 
-## 6.1 Apply UX v3
-Перед применением UX v3-карты проверь guard на целевой JSON:
-
-```bash
-cd /opt/metaphor_card
-make ux-v3-check
-```
-
-Для dry-run пайплайна используй тот же v3 map через apply-gate:
-
-```bash
-cd /opt/metaphor_card
-make ux-v3-dry
-```
-
-Если guard прошёл, запускай apply-этап:
-
-```bash
-cd /opt/metaphor_card
-make ux-v3-apply
-```
-
-По умолчанию все три команды читают `docs/UX_PATCH_MAP_PYTHON_v3.json`. Guard завершится с ошибкой, если:
-- `items` пустой;
-- `source` содержит placeholder-маркер;
-- любой `old_snippet` совпадает с `new_snippet`.
-
-## 6.2 Apply UX v4 safely
-Перед применением UX v4-карты сначала проверь guard на целевом JSON:
-
-```bash
-cd /opt/metaphor_card
-make ux-v4-check
-```
-
-Для dry-run пайплайна используй apply-gate с тем же map:
-
-```bash
-cd /opt/metaphor_card
-make ux-v4-dry
-```
-
-Если guard прошёл, запускай apply-этап:
-
-```bash
-cd /opt/metaphor_card
-make ux-v4-apply
-```
-
-По умолчанию все три команды читают `docs/UX_PATCH_MAP_PYTHON_v4.json`. Для v4 guard завершится с ошибкой, если:
-- root JSON не object c полями `version`, `source`, `items`;
-- `items` не список;
-- `items` пустой или в нём меньше 8 элементов;
-- `source` содержит placeholder-маркер;
-- любой `old_snippet` совпадает с `new_snippet`;
-- в `items` повторяется пара `(target_file, old_snippet)`.
-
-## 7. Если сервис не поднялся
+## 8. Если сервис не поднялся
 1. Проверить конфиг:
    ```bash
    sudo systemctl status metaphor-card.service
