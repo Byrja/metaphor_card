@@ -5,7 +5,18 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 export PYTHONPATH="src:.${PYTHONPATH:+:$PYTHONPATH}"
-smoke_output="$(python scripts/smoke.py)"
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if [[ -x ".venv/bin/python" ]]; then
+    PYTHON_BIN=".venv/bin/python"
+  elif [[ -x ".venv/bin/python3" ]]; then
+    PYTHON_BIN=".venv/bin/python3"
+  else
+    PYTHON_BIN="python3"
+  fi
+fi
+
+smoke_output="$($PYTHON_BIN scripts/smoke.py)"
 printf '%s\n' "$smoke_output"
 
 if ! grep -F "Сделаем короткий чек-ин спокойно и без спешки." <<<"$smoke_output" >/dev/null; then
@@ -29,7 +40,7 @@ fi
 
 echo "[smoke.sh] v4 safety microcopy ok"
 
-prepare_output="$(python scripts/cards_prepare_approved.py --smoke)"
+prepare_output="$($PYTHON_BIN scripts/cards_prepare_approved.py --smoke)"
 printf '%s\n' "$prepare_output"
 
 if ! grep -F "[cards-prepare-approved] smoke ok" <<<"$prepare_output" >/dev/null; then
